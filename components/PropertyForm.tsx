@@ -46,14 +46,19 @@ export function PropertyForm({ property }: { property?: Property }) {
           className="mt-1.5 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 outline-none ring-sage/30 focus:ring-2"
         />
       </label>
-      {property?.images.some((s) => s.startsWith("/uploads/")) ? (
+      {property?.images.some(
+        (s) => s.startsWith("/uploads/") || s.startsWith("/api/files/") || s.startsWith("data:"),
+      ) ? (
         <div className="text-sm">
           <p className="font-medium">Uploaded photos (kept automatically)</p>
           <ul className="mt-2 space-y-1 text-muted">
             {property.images
-              .filter((s) => s.startsWith("/uploads/"))
+              .filter(
+                (s) =>
+                  s.startsWith("/uploads/") || s.startsWith("/api/files/") || s.startsWith("data:"),
+              )
               .map((src) => (
-                <li key={src}>{src}</li>
+                <li key={src}>{src.startsWith("data:") ? "Saved photo (syncs to the live site)" : src}</li>
               ))}
           </ul>
         </div>

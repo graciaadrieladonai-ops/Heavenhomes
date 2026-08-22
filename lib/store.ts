@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { isVercelHost } from "./host";
+import { hasSharedDatabase, readSharedDb, writeSharedDb } from "./remote-db";
 import type { Application, Database, Maintainer, PaymentAccounts, Property } from "./types";
 
 const ON_VERCEL = isVercelHost();
@@ -277,23 +278,33 @@ async function ensureDb() {
   }
 }
 
-async function readDb(): Promise<Database> {
-  await ensureDb();
-  if (useMemory && memoryDb) return memoryDb;
+async function localFileDb(): Promise<Database | null> {
   try {
     const raw = await fs.readFile(DB_PATH, "utf8");
     return normalizeDb(JSON.parse(raw) as Partial<Database>);
   } catch {
-    return fallbackDb();
+    return null;
   }
 }
 
+async function readDb(): Promise<Database> {
+  const seed = (!ON_VERCEL ? await localFileDb() : null) ?? emptyDb();
+  const shared = await readSharedDb(seed);
+  if (shared) return normalizeDb(shared);
+
+  await ensureDb();
+  if (useMemory && memoryDb) return memoryDb;
+  return (await localFileDb()) ?? fallbackDb();
+}
+
 async function writeDb(db: Database) {
-  if (useMemory) {
+  await writeSharedDb(db);
+  if (ON_VERCEL) {
     memoryDb = db;
     return;
   }
   try {
+    await fs.mkdir(DATA_DIR, { recursive: true });
     await fs.writeFile(DB_PATH, JSON.stringify(db, null, 2));
   } catch {
     memoryDb = db;
@@ -460,9 +471,15 @@ export async function saveUpload(file: File, folder: "ids" | "properties" | "pro
   const ext = (file.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "");
   const safeExt = ext || "bin";
   const filename = `${name}.${safeExt}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+  if (hasSharedDatabase() && buffer.length <= 3 * 1024 * 1024) {
+    const mime =
+      file.type ||
+      (safeExt === "pdf" ? "application/pdf" : safeExt === "png" ? "image/png" : "image/jpeg");
+    return `data:${mime};base64,${buffer.toString("base64")}`;
+  }
   const dir = path.join(UPLOAD_DIR, folder);
   await fs.mkdir(dir, { recursive: true });
-  const buffer = Buffer.from(await file.arrayBuffer());
   await fs.writeFile(path.join(dir, filename), buffer);
   return ON_VERCEL
     ? `/api/files/${folder}/${filename}`

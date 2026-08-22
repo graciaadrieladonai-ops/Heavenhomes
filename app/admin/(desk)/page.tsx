@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listApplications, listMaintainers, stats } from "@/lib/store";
 import { formatShortDate } from "@/lib/format";
+import { hasSharedDatabase } from "@/lib/remote-db";
 
 export const dynamic = "force-dynamic";
 
@@ -17,9 +18,9 @@ export default async function AdminHomePage() {
     <div>
       <h1 className="font-serif text-4xl">Overview</h1>
       <p className="mt-2 max-w-2xl text-muted">
-        Every form a visitor fills is saved here — renter applications, IDs, tour
-        dates, receipts, and home-maintainer applications. No extra service is
-        required; open the records below.
+        {hasSharedDatabase()
+          ? "Homes you publish here also appear on the live Vercel site. Applications people submit there show up in this desk."
+          : "Every form a visitor fills is saved here — renter applications, IDs, tour dates, receipts, and home-maintainer applications."}
       </p>
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[

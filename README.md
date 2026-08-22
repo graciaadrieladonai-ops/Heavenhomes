@@ -2,7 +2,7 @@
 
 Search homes, apply, schedule a tour, and pay an application fee. Home maintainers can apply to work on listed properties.
 
-This is one Next.js app. There is no separate database and no second backend.
+This is one Next.js app. Listings are stored in a shared Postgres database when `DATABASE_URL` is set, so a house you publish in admin on this Mac also appears on Vercel. If that URL is missing, the public site still loads from seed data and does not crash.
 
 ## Run locally (admin lives here)
 
@@ -11,7 +11,7 @@ npm install
 cp .env.example .env.local
 ```
 
-Put your admin email, password, and a long random `ADMIN_SECRET` in `.env.local`, then:
+Put your admin email, password, a long random `ADMIN_SECRET`, and the same `DATABASE_URL` used on Vercel in `.env.local`, then:
 
 ```bash
 npm run dev
@@ -19,23 +19,19 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). Sign in at [http://localhost:3000/admin/login](http://localhost:3000/admin/login).
 
-Listings, applications, and uploads are saved in `data/db.json` on this computer.
-
-## Host on Vercel (public listings only)
-
-Vercel cannot keep that JSON file. The hosted site shows the public homes. The owner desk does **not** run there — use this Mac instead.
+## Host on Vercel
 
 1. Import this GitHub repo in [Vercel](https://vercel.com/new)
-2. Deploy
-3. Open the `*.vercel.app` URL to browse listings
+2. In **Settings → Environment Variables**, add `DATABASE_URL` (same value as `.env.local`)
+3. Deploy
+4. Turn off **Deployment Protection** if visitors see a Vercel login screen
+5. Open the **Production** URL (not a preview URL with a random code in the middle)
 
-You do not need `ADMIN_EMAIL` / `ADMIN_PASSWORD` on Vercel.
+The owner desk does **not** run on Vercel. Publish homes from this Mac; the live site reads the same database.
 
-If you forked the repo, click **Sync fork** on GitHub, then **Redeploy** in Vercel. The first commit still crashes on Vercel because it tried to write `data/db.json`.
+If you forked the repo, click **Sync fork** on GitHub, then **Redeploy** in Vercel.
 
 ## Where the owner sees submitted data
-
-On this Mac only:
 
 1. Run `npm run dev`
 2. Open the tiny **admin** link in the footer (local site only)
