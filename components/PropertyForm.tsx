@@ -47,7 +47,11 @@ export function PropertyForm({ property }: { property?: Property }) {
         />
       </label>
       {property?.images.some(
-        (s) => s.startsWith("/uploads/") || s.startsWith("/api/files/") || s.startsWith("data:"),
+        (s) =>
+          s.startsWith("/uploads/") ||
+          s.startsWith("/api/files/") ||
+          s.startsWith("/api/media/") ||
+          s.startsWith("data:"),
       ) ? (
         <div className="text-sm">
           <p className="font-medium">Uploaded photos (kept automatically)</p>
@@ -55,10 +59,15 @@ export function PropertyForm({ property }: { property?: Property }) {
             {property.images
               .filter(
                 (s) =>
-                  s.startsWith("/uploads/") || s.startsWith("/api/files/") || s.startsWith("data:"),
+                  s.startsWith("/uploads/") ||
+                  s.startsWith("/api/files/") ||
+                  s.startsWith("/api/media/") ||
+                  s.startsWith("data:"),
               )
               .map((src) => (
-                <li key={src}>{src.startsWith("data:") ? "Saved photo (syncs to the live site)" : src}</li>
+                <li key={src}>
+                  {src.startsWith("data:") ? "Saved photo (syncs to the live site)" : src}
+                </li>
               ))}
           </ul>
         </div>

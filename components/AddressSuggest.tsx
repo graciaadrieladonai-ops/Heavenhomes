@@ -137,9 +137,10 @@ export function AddressSuggest({
       setHits([]);
       return;
     }
+    const ac = new AbortController();
     const timer = window.setTimeout(() => {
       const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6&lang=en`;
-      fetch(url)
+      fetch(url, { signal: ac.signal })
         .then((res) => res.json())
         .then((data: { features?: unknown[] }) => {
           const next = (data.features ?? [])
@@ -148,9 +149,15 @@ export function AddressSuggest({
           setHits(next);
           setOpen(next.length > 0);
         })
-        .catch(() => setHits([]));
+        .catch((error: { name?: string }) => {
+          if (error?.name === "AbortError") return;
+          setHits([]);
+        });
     }, 280);
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(timer);
+      ac.abort();
+    };
   }, [address, useGoogle]);
 
   useEffect(() => {

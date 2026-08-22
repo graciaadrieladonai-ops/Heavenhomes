@@ -31,7 +31,10 @@ async function propertyFromForm(formData: FormData, existing?: Property | null) 
   const keptUploads =
     existing?.images.filter(
       (src) =>
-        src.startsWith("/uploads/") || src.startsWith("/api/files/") || src.startsWith("data:"),
+        src.startsWith("/uploads/") ||
+        src.startsWith("/api/files/") ||
+        src.startsWith("/api/media/") ||
+        src.startsWith("data:"),
     ) ?? [];
   const uploaded: string[] = [];
   const files = formData

@@ -238,7 +238,7 @@ export async function submitPaymentProofAction(formData: FormData) {
   application.paymentProofPath = await saveUpload(proof, "proofs", `${id}_proof`);
   application.paidHold = paidHold;
   application.amountPaid = APPLICATION_FEE + (paidHold ? HOLD_AMOUNT : 0);
-  application.status = "payment_submitted";
+  application.status = application.transactionId ? "txn_issued" : "payment_submitted";
   application.updatedAt = new Date().toISOString();
   await saveApplication(application);
   await rememberRenterApplication(application.propertyId, application.id);
@@ -251,14 +251,20 @@ export async function issueTransactionIdAction(formData: FormData) {
   const id = str(formData, "id");
   const application = await getApplication(id);
   if (!application) throw new Error("Application not found");
-  if (application.status !== "payment_submitted" && application.status !== "txn_issued") {
-    throw new Error("This renter has not submitted payment proof yet.");
+  if (application.status === "paid") {
+    throw new Error("This renter already has a receipt.");
   }
 
   if (!application.transactionId) {
     application.transactionId = makeTransactionId();
   }
-  application.status = "txn_issued";
+  if (
+    application.status === "payment_submitted" ||
+    application.status === "txn_issued" ||
+    application.paymentProofPath
+  ) {
+    application.status = "txn_issued";
+  }
   application.updatedAt = new Date().toISOString();
   await saveApplication(application);
   revalidatePath("/admin");

@@ -1,7 +1,9 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { cache } from "react";
 import { isVercelHost } from "./host";
-import { hasSharedDatabase, readSharedDb, writeSharedDb } from "./remote-db";
+import { mediaFileUrl } from "./media";
+import { hasSharedDatabase, putSharedFile, readSharedDb, writeSharedDb } from "./remote-db";
 import type { Application, Database, Maintainer, PaymentAccounts, Property } from "./types";
 
 const ON_VERCEL = isVercelHost();
@@ -287,7 +289,7 @@ async function localFileDb(): Promise<Database | null> {
   }
 }
 
-async function readDb(): Promise<Database> {
+async function readDbUncached(): Promise<Database> {
   const seed = (!ON_VERCEL ? await localFileDb() : null) ?? emptyDb();
   const shared = await readSharedDb(seed);
   if (shared) return normalizeDb(shared);
@@ -295,6 +297,12 @@ async function readDb(): Promise<Database> {
   await ensureDb();
   if (useMemory && memoryDb) return memoryDb;
   return (await localFileDb()) ?? fallbackDb();
+}
+
+const readDbCached = cache(readDbUncached);
+
+async function readDb(): Promise<Database> {
+  return readDbCached();
 }
 
 async function writeDb(db: Database) {
@@ -324,7 +332,7 @@ let queue: Promise<unknown> = Promise.resolve();
 
 function mutate<T>(fn: (db: Database) => T | Promise<T>): Promise<T> {
   const run = queue.then(async () => {
-    const db = await readDb();
+    const db = await readDbUncached();
     const result = await fn(db);
     await writeDb(db);
     return result;
@@ -387,6 +395,23 @@ export async function savePaymentAccounts(accounts: PaymentAccounts) {
 export async function listApplications() {
   const db = await readDb();
   return [...db.applications].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export async function listApplicationSummaries() {
+  const db = await readDb();
+  const titles = new Map(db.properties.map((property) => [property.id, property.title]));
+  return [...db.applications]
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .map((app) => ({
+      id: app.id,
+      firstName: app.firstName,
+      lastName: app.lastName,
+      status: app.status,
+      createdAt: app.createdAt,
+      receiptNumber: app.receiptNumber,
+      transactionId: app.transactionId,
+      title: titles.get(app.propertyId) ?? "Listing removed",
+    }));
 }
 
 export async function getApplication(id: string) {
@@ -480,11 +505,19 @@ export async function saveUpload(file: File, folder: "ids" | "properties" | "pro
   const safeExt = ext || "bin";
   const filename = `${name}.${safeExt}`;
   const buffer = Buffer.from(await file.arrayBuffer());
+  const mime =
+    file.type ||
+    (safeExt === "pdf" ? "application/pdf" : safeExt === "png" ? "image/png" : "image/jpeg");
   if (hasSharedDatabase() && buffer.length <= 3 * 1024 * 1024) {
-    const mime =
-      file.type ||
-      (safeExt === "pdf" ? "application/pdf" : safeExt === "png" ? "image/png" : "image/jpeg");
-    return `data:${mime};base64,${buffer.toString("base64")}`;
+    const id = crypto.randomUUID();
+    const visibility = folder === "properties" ? "public" : "private";
+    const saved = await putSharedFile({
+      id,
+      mime,
+      body: buffer.toString("base64"),
+      visibility,
+    });
+    if (saved) return mediaFileUrl(visibility, id, mime);
   }
   const dir = path.join(UPLOAD_DIR, folder);
   await fs.mkdir(dir, { recursive: true });

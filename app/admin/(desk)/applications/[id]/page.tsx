@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getApplication, getProperty } from "@/lib/store";
 import { issueTransactionIdAction } from "@/app/actions/application";
 import { CopyButton } from "@/components/CopyButton";
+import { IdCard } from "@/components/IdCard";
 import {
   formatDate,
   formatTime,
@@ -78,21 +79,25 @@ export default async function ApplicationDetailPage({
         )}
         <span className="ml-2 capitalize">· {application.status.replaceAll("_", " ")}</span>
       </p>
-      {application.status === "payment_submitted" ? (
+      {application.status !== "paid" && !application.transactionId ? (
         <form action={issueTransactionIdAction} className="mt-6 rounded-2xl border border-sage/30 bg-[#e7efe8] p-5">
           <input type="hidden" name="id" value={application.id} />
-          <p className="font-medium">Payment proof is waiting for you</p>
+          <p className="font-medium">
+            {application.paymentProofPath
+              ? "Payment proof is waiting for you"
+              : "This renter does not have a Transaction ID yet"}
+          </p>
           <p className="mt-1 text-sm text-muted">
-            Review the screenshot below. If the transfer is real, issue a unique
-            Transaction ID. Copy it and give it to the renter — they must enter it
-            to get a tour receipt.
+            {application.paymentProofPath
+              ? "Review the screenshot below. If the transfer is real, issue a unique Transaction ID. Copy it and give it to the renter — they must enter it to get a tour receipt."
+              : "Issue a unique Transaction ID now, copy it, and give it to the renter. They enter it after payment to unlock a tour receipt."}
           </p>
           <button className="mt-4 inline-flex h-11 items-center rounded-full bg-sage px-5 text-sm text-white">
             Issue Transaction ID
           </button>
         </form>
       ) : null}
-      {application.status === "txn_issued" && application.transactionId ? (
+      {application.transactionId && application.status !== "paid" ? (
         <div className="mt-6 rounded-2xl border border-sage/30 bg-[#e7efe8] p-5">
           <p className="font-medium">Give this Transaction ID to the renter</p>
           <p className="mt-1 text-sm text-muted">
@@ -126,22 +131,5 @@ export default async function ApplicationDetailPage({
         </Link>
       ) : null}
     </div>
-  );
-}
-
-function IdCard({ label, src }: { label: string; src: string }) {
-  const isPdf = src.toLowerCase().endsWith(".pdf");
-  return (
-    <figure className="overflow-hidden rounded-2xl border border-line bg-white">
-      <figcaption className="border-b border-line px-4 py-2 text-sm">{label}</figcaption>
-      {isPdf ? (
-        <a href={src} className="block p-4 text-sm underline" target="_blank" rel="noreferrer">
-          Open PDF
-        </a>
-      ) : (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt={label} className="max-h-80 w-full object-contain bg-paper-2" />
-      )}
-    </figure>
   );
 }
