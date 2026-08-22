@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Header, Footer } from "@/components/SiteChrome";
 import { getProperty } from "@/lib/store";
 import { formatShortDate, money, propertyAddress } from "@/lib/format";
-import { renterAppliedTo } from "@/lib/renter";
+import { canViewProperty } from "@/lib/view-access";
 import { GetCodeButton } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ export default async function PropertyPage({
   const { id } = await params;
   const property = await getProperty(id);
   if (!property || !property.published) notFound();
-  const applied = await renterAppliedTo(property.id);
+  const applied = await canViewProperty(property.id);
 
   return (
     <>

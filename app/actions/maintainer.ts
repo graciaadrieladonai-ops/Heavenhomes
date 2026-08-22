@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { newId, saveMaintainer, saveUpload } from "@/lib/store";
 import type { Maintainer } from "@/lib/types";
+import { rememberMaintainer } from "@/lib/maintainer";
+import { parseMaintainerCategories } from "@/lib/trades";
 import { validateSsn } from "@/lib/validate-ssn";
 import { validateIdPhoto } from "@/lib/validate-id";
 
@@ -42,6 +44,17 @@ export async function submitMaintainerAction(formData: FormData) {
     .filter((d) => DAYS.includes(d));
   if (availableDays.length === 0) {
     throw new Error("Select at least one day you can work.");
+  }
+
+  const categories = parseMaintainerCategories(
+    formData.getAll("categories").map((c) => String(c)),
+  );
+  if (categories.length === 0) {
+    throw new Error("Select at least one work category.");
+  }
+  const categoryOther = str(formData, "categoryOther");
+  if (categories.includes("Other") && !categoryOther) {
+    throw new Error("Describe your other trade.");
   }
 
   const ssnError = validateSsn(str(formData, "ssn"));
@@ -86,6 +99,8 @@ export async function submitMaintainerAction(formData: FormData) {
     currentCity: str(formData, "currentCity"),
     currentState: str(formData, "currentState"),
     currentZip: str(formData, "currentZip"),
+    categories,
+    categoryOther: categories.includes("Other") ? categoryOther : "",
     experience: str(formData, "experience"),
     availableDays,
     payPerTwoVisits: str(formData, "payPerTwoVisits"),
@@ -100,6 +115,7 @@ export async function submitMaintainerAction(formData: FormData) {
   };
 
   await saveMaintainer(maintainer);
+  await rememberMaintainer(maintainer.id);
   revalidatePath("/admin");
   redirect("/maintain/thanks");
 }

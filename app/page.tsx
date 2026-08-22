@@ -3,6 +3,7 @@ import { PropertyCard } from "@/components/ui";
 import { SearchBar } from "@/components/SearchBar";
 import { filterProperties, listPublishedProperties } from "@/lib/store";
 import { getRenterSession } from "@/lib/renter";
+import { maintainerHasApplied } from "@/lib/maintainer";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,11 @@ export default async function HomePage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q = "" } = await searchParams;
-  const [all, renter] = await Promise.all([listPublishedProperties(), getRenterSession()]);
+  const [all, renter, maintainerApplied] = await Promise.all([
+    listPublishedProperties(),
+    getRenterSession(),
+    maintainerHasApplied(),
+  ]);
   const properties = filterProperties(all, q);
 
   return (
@@ -79,7 +84,9 @@ export default async function HomePage({
                 <PropertyCard
                   key={property.id}
                   property={property}
-                  applied={renter.propertyIds.includes(property.id)}
+                  applied={
+                    maintainerApplied || renter.propertyIds.includes(property.id)
+                  }
                 />
               ))}
             </div>

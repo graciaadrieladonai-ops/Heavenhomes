@@ -81,7 +81,7 @@ export function GetCodeButton({
           Get code and view now
         </span>
         <p className="mt-1.5 text-center text-xs text-muted">
-          Apply first to unlock viewing.
+          Renters apply for this home first. Maintainers apply for the job first.
         </p>
       </div>
     );

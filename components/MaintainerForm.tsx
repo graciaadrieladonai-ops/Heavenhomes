@@ -5,6 +5,7 @@ import { submitMaintainerAction } from "@/app/actions/maintainer";
 import { Field, Section } from "@/components/ui";
 import { isNextRedirect } from "@/lib/errors";
 import { validateSsn } from "@/lib/validate-ssn";
+import { MAINTAINER_CATEGORIES } from "@/lib/trades";
 
 function formatSsn(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 9);
@@ -19,6 +20,7 @@ export function MaintainerForm() {
   const [ssn, setSsn] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  const [otherSelected, setOtherSelected] = useState(false);
 
   return (
     <form
@@ -74,12 +76,48 @@ export function MaintainerForm() {
         <Field label="City" name="currentCity" required />
         <Field label="State" name="currentState" required />
         <Field label="ZIP" name="currentZip" required />
+      </Section>
+
+      <Section
+        title="What you do"
+        description="Select every trade that applies. Renters apply to live here; this is the job you want to do on the homes."
+      >
+        <div className="sm:col-span-2 grid gap-2 sm:grid-cols-2">
+          {MAINTAINER_CATEGORIES.map((category) => (
+            <label
+              key={category}
+              className="flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-sm"
+            >
+              <input
+                type="checkbox"
+                name="categories"
+                value={category}
+                onChange={
+                  category === "Other"
+                    ? (e) => setOtherSelected(e.target.checked)
+                    : undefined
+                }
+              />
+              {category}
+            </label>
+          ))}
+        </div>
+        {otherSelected ? (
+          <div className="sm:col-span-2">
+            <Field
+              label="If other, what work do you do?"
+              name="categoryOther"
+              required
+              placeholder="e.g. roofing, appliance repair"
+            />
+          </div>
+        ) : null}
         <div className="sm:col-span-2">
           <Field
-            label="Experience / work you can do"
+            label="More about your experience"
             name="experience"
             type="textarea"
-            placeholder="Cleaning, lawn, minor repairs, painting…"
+            placeholder="Years of work, licenses, the kinds of homes you have maintained…"
           />
         </div>
       </Section>

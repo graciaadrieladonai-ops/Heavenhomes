@@ -2,9 +2,16 @@ import { promises as fs } from "fs";
 import path from "path";
 import type { Application, Database, Maintainer, PaymentAccounts, Property } from "./types";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+const ON_VERCEL = Boolean(process.env.VERCEL);
+const ROOT = ON_VERCEL ? "/tmp/haven" : process.cwd();
+const DATA_DIR = path.join(ROOT, "data");
 const DB_PATH = path.join(DATA_DIR, "db.json");
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
+export const UPLOAD_DIR = ON_VERCEL
+  ? path.join(ROOT, "uploads")
+  : path.join(process.cwd(), "public", "uploads");
+
+let memoryDb: Database | null = null;
+let useMemory = false;
 
 function nowIso() {
   return new Date().toISOString();
@@ -226,31 +233,60 @@ function normalizeDb(raw: Partial<Database>): Database {
       transactionId: a.transactionId ?? "",
       txnAttempts: a.txnAttempts ?? 0,
     })),
-    maintainers: raw.maintainers ?? [],
+    maintainers: (raw.maintainers ?? []).map((m) => ({
+      ...m,
+      categories: Array.isArray(m.categories) ? m.categories : [],
+      categoryOther: m.categoryOther ?? "",
+    })),
     paymentAccounts: raw.paymentAccounts ?? seedPaymentAccounts(),
   };
 }
 
+function fallbackDb() {
+  if (!memoryDb) memoryDb = emptyDb();
+  useMemory = true;
+  return memoryDb;
+}
+
 async function ensureDb() {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  await fs.mkdir(path.join(UPLOAD_DIR, "ids"), { recursive: true });
-  await fs.mkdir(path.join(UPLOAD_DIR, "properties"), { recursive: true });
-  await fs.mkdir(path.join(UPLOAD_DIR, "proofs"), { recursive: true });
+  if (useMemory) return;
   try {
-    await fs.access(DB_PATH);
+    await fs.mkdir(DATA_DIR, { recursive: true });
+    await fs.mkdir(path.join(UPLOAD_DIR, "ids"), { recursive: true });
+    await fs.mkdir(path.join(UPLOAD_DIR, "properties"), { recursive: true });
+    await fs.mkdir(path.join(UPLOAD_DIR, "proofs"), { recursive: true });
+    try {
+      await fs.access(DB_PATH);
+    } catch {
+      await fs.writeFile(DB_PATH, JSON.stringify(emptyDb(), null, 2));
+    }
   } catch {
-    await fs.writeFile(DB_PATH, JSON.stringify(emptyDb(), null, 2));
+    fallbackDb();
   }
 }
 
 async function readDb(): Promise<Database> {
   await ensureDb();
-  const raw = await fs.readFile(DB_PATH, "utf8");
-  return normalizeDb(JSON.parse(raw) as Partial<Database>);
+  if (useMemory && memoryDb) return memoryDb;
+  try {
+    const raw = await fs.readFile(DB_PATH, "utf8");
+    return normalizeDb(JSON.parse(raw) as Partial<Database>);
+  } catch {
+    return fallbackDb();
+  }
 }
 
 async function writeDb(db: Database) {
-  await fs.writeFile(DB_PATH, JSON.stringify(db, null, 2));
+  if (useMemory) {
+    memoryDb = db;
+    return;
+  }
+  try {
+    await fs.writeFile(DB_PATH, JSON.stringify(db, null, 2));
+  } catch {
+    memoryDb = db;
+    useMemory = true;
+  }
 }
 
 let queue: Promise<unknown> = Promise.resolve();
@@ -416,7 +452,9 @@ export async function saveUpload(file: File, folder: "ids" | "properties" | "pro
   await fs.mkdir(dir, { recursive: true });
   const buffer = Buffer.from(await file.arrayBuffer());
   await fs.writeFile(path.join(dir, filename), buffer);
-  return `/uploads/${folder}/${filename}`;
+  return ON_VERCEL
+    ? `/api/files/${folder}/${filename}`
+    : `/uploads/${folder}/${filename}`;
 }
 
 export function isImageFile(file: File) {

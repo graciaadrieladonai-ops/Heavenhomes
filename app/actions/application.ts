@@ -7,6 +7,7 @@ import {
   getProperty,
   isImageFile,
   listApplications,
+  listMaintainers,
   makeReceiptNumber,
   makeTourCode,
   makeTransactionId,
@@ -17,6 +18,7 @@ import {
 import type { Application, PaymentMethod } from "@/lib/types";
 import { APPLICATION_FEE, HOLD_AMOUNT } from "@/lib/fees";
 import { rememberRenterApplication, renterOwnsApplication } from "@/lib/renter";
+import { rememberMaintainer } from "@/lib/maintainer";
 import { requireAdmin } from "@/lib/auth";
 import { timingSafeEqual, createHmac } from "crypto";
 import { validateSsn } from "@/lib/validate-ssn";
@@ -287,10 +289,18 @@ export async function unlockViewWithEmailAction(formData: FormData) {
   const email = str(formData, "email").toLowerCase();
   if (!email) throw new Error("Enter the email on your application");
   const apps = await listApplications();
-  const match = apps.find(
+  const renterMatch = apps.find(
     (a) => a.propertyId === propertyId && a.email.toLowerCase() === email,
   );
-  if (!match) throw new Error("No application found for that email on this home.");
-  await rememberRenterApplication(propertyId, match.id);
-  redirect(`/properties/${propertyId}/view`);
+  if (renterMatch) {
+    await rememberRenterApplication(propertyId, renterMatch.id);
+    redirect(`/properties/${propertyId}/view`);
+  }
+  const maintainers = await listMaintainers();
+  const maintainerMatch = maintainers.find((m) => m.email.toLowerCase() === email);
+  if (maintainerMatch) {
+    await rememberMaintainer(maintainerMatch.id);
+    redirect(`/properties/${propertyId}/view`);
+  }
+  throw new Error("No renter or maintainer application found for that email.");
 }

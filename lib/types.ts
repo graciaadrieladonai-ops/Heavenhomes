@@ -126,6 +126,8 @@ export type Maintainer = {
   currentCity: string;
   currentState: string;
   currentZip: string;
+  categories: string[];
+  categoryOther: string;
   experience: string;
   availableDays: string[];
   payPerTwoVisits: string;

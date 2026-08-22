@@ -25,7 +25,7 @@ export function UnlockViewForm({ propertyId }: { propertyId: string }) {
     >
       <input type="hidden" name="propertyId" value={propertyId} />
       <label className="block text-sm">
-        Already applied? Enter the email on your application
+        Already applied as a renter or maintainer? Enter that email
         <input
           name="email"
           type="email"

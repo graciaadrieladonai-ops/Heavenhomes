@@ -5,7 +5,7 @@ import { UnlockViewForm } from "@/components/UnlockViewForm";
 import { MotherSiteNotice } from "@/components/MotherSiteNotice";
 import { getProperty } from "@/lib/store";
 import { propertyAddress } from "@/lib/format";
-import { renterAppliedTo } from "@/lib/renter";
+import { canViewProperty } from "@/lib/view-access";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +17,7 @@ export default async function ViewCodePage({
   const { id } = await params;
   const property = await getProperty(id);
   if (!property || !property.published) notFound();
-  const applied = await renterAppliedTo(property.id);
+  const applied = await canViewProperty(property.id);
   const url = property.viewCodeUrl.trim();
 
   return (
@@ -28,15 +28,24 @@ export default async function ViewCodePage({
           <div className="text-center">
             <h1 className="font-serif text-4xl">Apply first to view this home</h1>
             <p className="mt-3 text-muted">
-              Get code and view now is only available after you successfully
-              apply for {property.title}.
+              Get code and view now is only available after a successful
+              application. Renters apply for {property.title}. Maintainers
+              submit the home-maintainer job application first.
             </p>
-            <Link
-              href={`/apply/${property.id}`}
-              className="mt-8 inline-flex h-12 items-center rounded-full bg-sage px-6 text-sm text-white"
-            >
-              Apply and schedule a tour
-            </Link>
+            <div className="mt-8 grid gap-3">
+              <Link
+                href={`/apply/${property.id}`}
+                className="inline-flex h-12 items-center justify-center rounded-full bg-sage px-6 text-sm text-white"
+              >
+                Apply as a renter
+              </Link>
+              <Link
+                href="/maintain"
+                className="inline-flex h-12 items-center justify-center rounded-full border border-ink bg-white px-6 text-sm"
+              >
+                Apply as a home maintainer
+              </Link>
+            </div>
             <UnlockViewForm propertyId={property.id} />
           </div>
         ) : (

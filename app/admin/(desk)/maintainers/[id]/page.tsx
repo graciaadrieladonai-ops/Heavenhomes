@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getMaintainer } from "@/lib/store";
 import { fullName } from "@/lib/format";
+import { formatMaintainerCategories } from "@/lib/trades";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ export default async function MaintainerDetailPage({
     ["Date of birth", m.dateOfBirth],
     ["SSN", m.ssn],
     ["Address", `${m.currentAddress}, ${m.currentCity}, ${m.currentState} ${m.currentZip}`],
+    ["Category", formatMaintainerCategories(m.categories, m.categoryOther)],
     ["Experience", m.experience],
     ["Days available", m.availableDays.join(", ")],
     ["Pay per 2× week", m.payPerTwoVisits],

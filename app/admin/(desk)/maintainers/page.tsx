@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listMaintainers } from "@/lib/store";
 import { formatShortDate } from "@/lib/format";
+import { formatMaintainerCategories } from "@/lib/trades";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,8 @@ export default async function MaintainersAdminPage() {
                     <span className="text-sm text-muted">{formatShortDate(m.createdAt)}</span>
                   </div>
                   <p className="mt-1 text-sm text-muted">
-                    {m.payPerTwoVisits} / 2× week · cheque deposit · {m.bankName} ·{" "}
+                    {formatMaintainerCategories(m.categories, m.categoryOther) || "No category"}{" "}
+                    · {m.payPerTwoVisits} / 2× week · cheque deposit · {m.bankName} ·{" "}
                     {m.availableDays.join(", ")}
                   </p>
                 </Link>
