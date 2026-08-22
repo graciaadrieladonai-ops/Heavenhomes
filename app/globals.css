@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #f4efe6;
+  --paper-2: #ebe4d6;
+  --ink: #171410;
+  --muted: #6d665c;
+  --line: #d9d0c2;
+  --sage: #2f4a3e;
+  --sage-2: #1e3229;
+  --clay: #b85c38;
+  --gold: #c4a574;
+  --white: #fffdf8;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-sage: var(--sage);
+  --color-sage-2: var(--sage-2);
+  --color-clay: var(--clay);
+  --color-gold: var(--gold);
+  --color-white: var(--white);
+  --font-sans: var(--font-outfit);
+  --font-serif: var(--font-fraunces);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-outfit), system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+.font-serif {
+  font-family: var(--font-fraunces), Georgia, serif;
+}
+
+::selection {
+  background: #d8c4a6;
+  color: var(--ink);
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white;
+  }
+  .print-sheet {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+}
