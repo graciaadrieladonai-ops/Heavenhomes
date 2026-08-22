@@ -81,7 +81,7 @@ export function GetCodeButton({
           Get code and view now
         </span>
         <p className="mt-1.5 text-center text-xs text-muted">
-          Renters apply for this home first. Maintainers apply for the job first.
+          Renters apply for this home first. To work on homes, apply for a job first.
         </p>
       </div>
     );

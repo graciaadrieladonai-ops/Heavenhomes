@@ -46,7 +46,7 @@ export function MaintainerForm() {
     >
       <Section
         title="Your details"
-        description="This application is for people who want to maintain listed homes, not for renting them."
+        description="This application is for people who want a job on listed homes, not for renting them."
       >
         <Field label="First name" name="firstName" required autoComplete="given-name" />
         <Field label="Middle name" name="middleName" />
@@ -140,7 +140,7 @@ export function MaintainerForm() {
 
       <Section
         title="Cheque deposit — bank details"
-        description="Maintainers are paid by cheque deposit only. Enter the bank account where the cheque should be deposited."
+        description="Job pay is by cheque deposit only. Enter the bank account where the cheque should be deposited."
       >
         <Field
           label="Pay per 2 times a week"
@@ -217,7 +217,7 @@ export function MaintainerForm() {
         disabled={pending}
         className="inline-flex h-12 w-full items-center justify-center rounded-full bg-sage text-sm font-medium text-white hover:bg-sage-2 disabled:opacity-60 sm:w-auto sm:px-10"
       >
-        {pending ? "Submitting…" : "Submit maintainer application"}
+        {pending ? "Submitting…" : "Submit job application"}
       </button>
     </form>
   );

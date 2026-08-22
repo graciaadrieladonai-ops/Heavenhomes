@@ -29,8 +29,8 @@ export default async function ViewCodePage({
             <h1 className="font-serif text-4xl">Apply first to view this home</h1>
             <p className="mt-3 text-muted">
               Get code and view now is only available after a successful
-              application. Renters apply for {property.title}. Maintainers
-              submit the home-maintainer job application first.
+              application. Renters apply for {property.title}. Job applicants
+              submit the job application first.
             </p>
             <div className="mt-8 grid gap-3">
               <Link
@@ -43,7 +43,7 @@ export default async function ViewCodePage({
                 href="/maintain"
                 className="inline-flex h-12 items-center justify-center rounded-full border border-ink bg-white px-6 text-sm"
               >
-                Apply as a home maintainer
+                Apply for job
               </Link>
             </div>
             <UnlockViewForm propertyId={property.id} />

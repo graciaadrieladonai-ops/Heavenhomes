@@ -99,5 +99,8 @@ export async function deletePropertyAction(formData: FormData) {
   await deleteProperty(id);
   revalidatePath("/");
   revalidatePath("/admin");
+  revalidatePath("/admin/properties");
+  revalidatePath(`/properties/${id}`);
+  revalidatePath(`/properties/${id}/view`);
   redirect("/admin/properties");
 }

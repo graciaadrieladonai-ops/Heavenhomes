@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { deletePropertyAction } from "@/app/actions/property";
+import { DeleteListingForm } from "@/components/DeleteListingForm";
 import { listAllProperties } from "@/lib/store";
 import { money } from "@/lib/format";
 
@@ -19,7 +19,10 @@ export default async function AdminPropertiesPage() {
           New listing
         </Link>
       </div>
-      <p className="mt-2 text-muted">Only published homes appear on the public landing page.</p>
+      <p className="mt-2 text-muted">
+        Published homes appear on the public site. Use Delete listing to take one
+        off this desk and the live page.
+      </p>
       <div className="mt-8 overflow-hidden rounded-2xl border border-line bg-white">
         {properties.length === 0 ? (
           <p className="p-6 text-sm text-muted">No properties yet.</p>
@@ -33,19 +36,14 @@ export default async function AdminPropertiesPage() {
                     {p.city}, {p.state} · {money(p.price)}/mo · {p.published ? "Published" : "Hidden"}
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Link
                     href={`/admin/properties/${p.id}`}
-                    className="rounded-full border border-line px-4 py-1.5 text-sm"
+                    className="inline-flex h-11 items-center rounded-full border border-line px-5 text-sm"
                   >
                     Edit
                   </Link>
-                  <form action={deletePropertyAction}>
-                    <input type="hidden" name="id" value={p.id} />
-                    <button className="rounded-full border border-clay/30 px-4 py-1.5 text-sm text-clay">
-                      Delete
-                    </button>
-                  </form>
+                  <DeleteListingForm id={p.id} title={p.title} />
                 </div>
               </li>
             ))}

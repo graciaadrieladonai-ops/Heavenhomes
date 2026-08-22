@@ -55,8 +55,7 @@ export default async function HomePage({
             </h1>
             <p className="mt-5 max-w-xl text-lg text-white/80">
               Look up a property, apply, pick a visit time, and keep your receipt
-              for the tour. Want to work on these homes instead? Become a home
-              maintainer.
+              for the tour. Want to work on these homes instead? Apply for a job.
             </p>
             <div className="mt-8 max-w-xl">
               <SearchBar defaultValue={q} variant="hero" />

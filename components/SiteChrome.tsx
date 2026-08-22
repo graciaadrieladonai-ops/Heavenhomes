@@ -23,7 +23,7 @@ export async function Header() {
             href="/maintain"
             className="inline-flex items-center rounded-full bg-sage px-4 py-2.5 text-center font-medium leading-tight text-white hover:bg-sage-2 sm:px-5"
           >
-            Become a home maintainer
+            Apply for job
           </Link>
           <Link
             href="/#homes"
@@ -44,14 +44,14 @@ export function Footer() {
         <div>
           <p className="font-serif text-2xl">Haven</p>
           <p className="mt-2 max-w-sm text-sm text-white/70">
-            Search homes, schedule a tour, and apply. Home maintainers can also
-            apply to work on listed properties.
+            Search homes, schedule a tour, and apply. You can also apply for a
+            job to work on listed properties.
           </p>
         </div>
         <div className="flex items-end justify-between gap-6 text-sm sm:block sm:text-right">
           <div className="flex gap-6 text-white/70">
             <Link href="/maintain" className="hover:text-white">
-              Become a home maintainer
+              Apply for job
             </Link>
             <Link href="/#homes" className="hover:text-white">
               Schedule a tour
