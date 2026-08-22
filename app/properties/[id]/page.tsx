@@ -90,11 +90,6 @@ export default async function PropertyPage({
                 <dd>{formatShortDate(property.availableDate)}</dd>
               </div>
             </dl>
-            <p className="mt-5 text-sm text-muted">
-              Application fee $100 (refundable). Security deposit $1,000 is due
-              after viewing. Pay $500 now if you want to hold this home from other
-              applicants.
-            </p>
             <div className="mt-6 grid gap-2">
               <Link
                 href={`/apply/${property.id}`}

@@ -5,7 +5,6 @@ import { ApplicationForm } from "@/components/ApplicationForm";
 import { Stepper } from "@/components/ui";
 import { getProperty } from "@/lib/store";
 import { money, propertyAddress } from "@/lib/format";
-import { APPLICATION_FEE } from "@/lib/fees";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,8 +31,7 @@ export default async function ApplyPage({
         </p>
         <h1 className="mt-2 font-serif text-4xl">Rental application</h1>
         <p className="mt-2 text-muted">
-          {propertyAddress(property)} · {money(property.price)}/mo ·{" "}
-          {money(APPLICATION_FEE)} refundable application fee
+          {propertyAddress(property)} · {money(property.price)}/mo
         </p>
         <div className="mt-8">
           <ApplicationForm property={property} />

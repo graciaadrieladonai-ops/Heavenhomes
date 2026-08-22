@@ -49,10 +49,6 @@ export function PropertyCard({
           {money(property.price)}
           <span className="ml-1 text-base font-sans text-muted">/mo</span>
         </p>
-        <p className="mt-2 text-xs text-muted">
-          $100 refundable application fee · $1,000 security deposit after viewing ·
-          pay $500 now to hold it
-        </p>
         <div className="mt-5 grid gap-2">
           <Link
             href={`/apply/${property.id}`}

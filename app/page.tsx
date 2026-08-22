@@ -1,7 +1,8 @@
 import { Header, Footer } from "@/components/SiteChrome";
 import { PropertyCard } from "@/components/ui";
 import { SearchBar } from "@/components/SearchBar";
-import { filterProperties, listPublishedProperties } from "@/lib/store";
+import { listPublishedProperties } from "@/lib/store";
+import { filterProperties, toSearchHits } from "@/lib/search";
 import { getRenterSession } from "@/lib/renter";
 import { maintainerHasApplied } from "@/lib/maintainer";
 
@@ -33,6 +34,7 @@ export default async function HomePage({
     maintainerApplied = false;
   }
   const properties = filterProperties(all, q);
+  const homes = toSearchHits(all);
 
   return (
     <>
@@ -58,7 +60,7 @@ export default async function HomePage({
               for the tour. Want to work on these homes instead? Apply for a job.
             </p>
             <div className="mt-8 max-w-xl">
-              <SearchBar defaultValue={q} variant="hero" />
+              <SearchBar defaultValue={q} variant="hero" homes={homes} />
             </div>
           </div>
         </section>
@@ -71,12 +73,13 @@ export default async function HomePage({
                 {q ? `Results for “${q}”` : "Schedule a tour"}
               </h2>
               <p className="mt-2 max-w-md text-sm text-muted">
-                Choose a home, apply, then pick a tour date. Your receipt is proof
-                of the appointment.
+                {q
+                  ? "These are listed homes that match your search. Pick one to apply and schedule a tour."
+                  : "Choose a home, apply, then pick a tour date. Your receipt is proof of the appointment."}
               </p>
             </div>
             <div className="w-full max-w-md">
-              <SearchBar defaultValue={q} />
+              <SearchBar defaultValue={q} homes={homes} />
             </div>
           </div>
 
@@ -87,7 +90,7 @@ export default async function HomePage({
               </p>
               <p className="mt-2 text-muted">
                 {q
-                  ? "Try a city, street, or a different keyword."
+                  ? "Try the street, city, ZIP, or the name of a listed home."
                   : "Check back soon for new listings."}
               </p>
             </div>

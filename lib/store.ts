@@ -456,17 +456,6 @@ export async function saveMaintainer(maintainer: Maintainer) {
   });
 }
 
-export function filterProperties(properties: Property[], query: string) {
-  const needle = query.trim().toLowerCase();
-  if (!needle) return properties;
-  return properties.filter((p) =>
-    [p.title, p.city, p.state, p.zip, p.address, p.type, p.description, p.amenities.join(" ")]
-      .join(" ")
-      .toLowerCase()
-      .includes(needle),
-  );
-}
-
 export async function stats() {
   const db = await readDb();
   return {
