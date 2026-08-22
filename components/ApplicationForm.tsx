@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import { submitApplicationAction } from "@/app/actions/application";
 import { Field, Section } from "@/components/ui";
 import type { Property } from "@/lib/types";
@@ -16,33 +16,26 @@ function formatSsn(value: string) {
   return digits;
 }
 
+async function applyAction(_prev: string, formData: FormData) {
+  const ssnError = validateSsn(String(formData.get("ssn") || ""));
+  if (ssnError) return ssnError;
+  try {
+    await submitApplicationAction(formData);
+  } catch (err) {
+    if (isNextRedirect(err)) throw err;
+    const message = err instanceof Error ? err.message : "Could not submit application.";
+    if (/Minified React error #441/.test(message)) throw err;
+    return message;
+  }
+  return "";
+}
+
 export function ApplicationForm({ property }: { property: Property }) {
   const [ssn, setSsn] = useState("");
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState("");
+  const [error, action, pending] = useActionState(applyAction, "");
 
   return (
-    <form
-      className="space-y-6"
-      action={async (formData) => {
-        setError("");
-        const ssnError = validateSsn(String(formData.get("ssn") || ""));
-        if (ssnError) {
-          setError(ssnError);
-          return;
-        }
-        setPending(true);
-        try {
-          await submitApplicationAction(formData);
-        } catch (err) {
-          if (isNextRedirect(err)) throw err;
-          const message = err instanceof Error ? err.message : "Could not submit application.";
-          if (/Minified React error #441/.test(message)) throw err;
-          setError(message);
-          setPending(false);
-        }
-      }}
-    >
+    <form className="space-y-6" action={action}>
       <input type="hidden" name="propertyId" value={property.id} />
 
       <Section title="Applicant" description="Legal name and contact details as they appear on your ID.">

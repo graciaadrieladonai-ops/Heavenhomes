@@ -53,20 +53,24 @@ export async function getRenterSession(): Promise<RenterSession> {
 }
 
 export async function rememberRenterApplication(propertyId: string, applicationId: string) {
-  const current = await getRenterSession();
-  const session: RenterSession = {
-    propertyIds: Array.from(new Set([...current.propertyIds, propertyId])),
-    applicationIds: Array.from(new Set([...current.applicationIds, applicationId])),
-    exp: Date.now() + 30 * 24 * 60 * 60 * 1000,
-  };
-  const jar = await cookies();
-  jar.set(COOKIE, encode(session), {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
-  });
+  try {
+    const current = await getRenterSession();
+    const session: RenterSession = {
+      propertyIds: Array.from(new Set([...current.propertyIds, propertyId])),
+      applicationIds: Array.from(new Set([...current.applicationIds, applicationId])),
+      exp: Date.now() + 30 * 24 * 60 * 60 * 1000,
+    };
+    const jar = await cookies();
+    jar.set(COOKIE, encode(session), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+  } catch {
+    // Application is already saved; the tour page loads by URL id.
+  }
 }
 
 export async function renterAppliedTo(propertyId: string) {

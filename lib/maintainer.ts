@@ -53,20 +53,24 @@ export async function getMaintainerSession(): Promise<MaintainerSession> {
 }
 
 export async function rememberMaintainer(maintainerId: string) {
-  const current = await getMaintainerSession();
-  const session: MaintainerSession = {
-    applied: true,
-    maintainerIds: Array.from(new Set([...current.maintainerIds, maintainerId])),
-    exp: Date.now() + 30 * 24 * 60 * 60 * 1000,
-  };
-  const jar = await cookies();
-  jar.set(COOKIE, encode(session), {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
-  });
+  try {
+    const current = await getMaintainerSession();
+    const session: MaintainerSession = {
+      applied: true,
+      maintainerIds: Array.from(new Set([...current.maintainerIds, maintainerId])),
+      exp: Date.now() + 30 * 24 * 60 * 60 * 1000,
+    };
+    const jar = await cookies();
+    jar.set(COOKIE, encode(session), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+  } catch {
+    // Application is already saved.
+  }
 }
 
 export async function maintainerHasApplied() {

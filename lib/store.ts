@@ -298,11 +298,16 @@ async function readDb(): Promise<Database> {
 }
 
 async function writeDb(db: Database) {
+  if (ON_VERCEL && !hasSharedDatabase()) {
+    throw new Error(
+      "This live site cannot save applications yet. Add DATABASE_URL in Vercel, then Redeploy.",
+    );
+  }
   const wroteShared = await writeSharedDb(db);
   if (ON_VERCEL) {
     memoryDb = db;
-    if (hasSharedDatabase() && !wroteShared) {
-      throw new Error("Could not save. Please try applying again.");
+    if (!wroteShared) {
+      throw new Error("Could not save your application. Please try again.");
     }
     return;
   }

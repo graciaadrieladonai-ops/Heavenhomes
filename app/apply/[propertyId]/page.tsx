@@ -7,6 +7,7 @@ import { getProperty } from "@/lib/store";
 import { money, propertyAddress } from "@/lib/format";
 import { APPLICATION_FEE } from "@/lib/fees";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export default async function ApplyPage({

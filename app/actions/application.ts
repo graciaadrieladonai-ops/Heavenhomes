@@ -156,6 +156,7 @@ export async function submitApplicationAction(formData: FormData) {
 
   await saveApplication(application);
   await rememberRenterApplication(propertyId, application.id);
+  revalidatePath("/");
   revalidatePath("/admin");
   redirect(`/tour/${application.id}`);
 }

@@ -4,6 +4,7 @@ import { TourForm } from "@/components/TourForm";
 import { Stepper } from "@/components/ui";
 import { getApplication, getProperty } from "@/lib/store";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export default async function TourPage({
