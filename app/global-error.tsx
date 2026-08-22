@@ -1,7 +1,6 @@
 "use client";
 
 export default function GlobalError({
-  error,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -9,13 +8,29 @@ export default function GlobalError({
 }) {
   return (
     <html lang="en">
-      <body style={{ fontFamily: "system-ui, sans-serif", padding: 48, textAlign: "center" }}>
-        <h1>This page could not load</h1>
-        <p>This is a single Next.js app. There is no separate database mixed in.</p>
-        {error.digest ? <p>Error {error.digest}</p> : null}
-        <button type="button" onClick={() => reset()}>
-          Reload
-        </button>
+      <body style={{ fontFamily: "Georgia, serif", background: "#f4efe6", color: "#171410", margin: 0 }}>
+        <main style={{ maxWidth: 480, margin: "0 auto", padding: "80px 20px", textAlign: "center" }}>
+          <h1 style={{ fontSize: 36 }}>Haven is starting</h1>
+          <p style={{ color: "#6d665c" }}>
+            Reload this tab. If this is vercel.com, open your project URL ending in
+            .vercel.app instead.
+          </p>
+          <button
+            type="button"
+            onClick={() => reset()}
+            style={{
+              marginTop: 24,
+              height: 48,
+              padding: "0 24px",
+              border: 0,
+              borderRadius: 999,
+              background: "#2f4a3e",
+              color: "white",
+            }}
+          >
+            Reload
+          </button>
+        </main>
       </body>
     </html>
   );
