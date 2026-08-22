@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { adminRunsHere } from "@/lib/host";
 
 export async function Header() {
   return (
@@ -56,9 +57,11 @@ export function Footer() {
               Schedule a tour
             </Link>
           </div>
-          <Link href="/admin/login" className="mt-6 inline-block text-[11px] text-white/35 hover:text-white/70">
-            admin
-          </Link>
+          {adminRunsHere() ? (
+            <Link href="/admin/login" className="mt-6 inline-block text-[11px] text-white/35 hover:text-white/70">
+              admin
+            </Link>
+          ) : null}
         </div>
       </div>
     </footer>

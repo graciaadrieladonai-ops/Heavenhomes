@@ -1,8 +1,9 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { isVercelHost } from "./host";
 import type { Application, Database, Maintainer, PaymentAccounts, Property } from "./types";
 
-const ON_VERCEL = Boolean(process.env.VERCEL);
+const ON_VERCEL = isVercelHost();
 const ROOT = ON_VERCEL ? "/tmp/haven" : process.cwd();
 const DATA_DIR = path.join(ROOT, "data");
 const DB_PATH = path.join(DATA_DIR, "db.json");

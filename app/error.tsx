@@ -11,8 +11,8 @@ export default function ErrorPage({
     <main className="mx-auto max-w-lg px-5 py-20 text-center">
       <h1 className="font-serif text-4xl">This page could not load</h1>
       <p className="mt-3 text-muted">
-        This app is a single Next.js site. There is no separate database or mixed
-        backend. Listings are kept in the app itself.
+        Reload this page. If it keeps failing, the hosted site may still be on
+        an old deploy. Admin is only on this computer at localhost:3000/admin/login.
       </p>
       {error.digest ? (
         <p className="mt-3 font-mono text-xs text-muted">Error {error.digest}</p>

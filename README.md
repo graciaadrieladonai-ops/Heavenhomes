@@ -2,7 +2,9 @@
 
 Search homes, apply, schedule a tour, and pay an application fee. Home maintainers can apply to work on listed properties.
 
-## Run locally
+This is one Next.js app. There is no separate database and no second backend.
+
+## Run locally (admin lives here)
 
 ```bash
 npm install
@@ -15,32 +17,30 @@ Put your admin email, password, and a long random `ADMIN_SECRET` in `.env.local`
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). Sign in at [http://localhost:3000/admin/login](http://localhost:3000/admin/login).
 
-## Host on Vercel
+Listings, applications, and uploads are saved in `data/db.json` on this computer.
 
-Admin login is not stored in git. It reads environment variables, so it works on Vercel after you set them.
+## Host on Vercel (public listings only)
+
+Vercel cannot keep that JSON file. The hosted site shows the public homes. The owner desk does **not** run there — use this Mac instead.
 
 1. Import this GitHub repo in [Vercel](https://vercel.com/new)
-2. In the project: **Settings → Environment Variables**, add:
+2. Deploy
+3. Open the `*.vercel.app` URL to browse listings
 
-| Name | Value |
-| --- | --- |
-| `ADMIN_EMAIL` | the owner login email |
-| `ADMIN_PASSWORD` | a strong password |
-| `ADMIN_SECRET` | a long random string (not the password) |
+You do not need `ADMIN_EMAIL` / `ADMIN_PASSWORD` on Vercel.
 
-3. Deploy. Sign in at `/admin/login` with that email and password.
-
-Use the same three values as `.env.local` if you want local and Vercel to share one login.
+If you forked the repo, click **Sync fork** on GitHub, then **Redeploy** in Vercel. The first commit still crashes on Vercel because it tried to write `data/db.json`.
 
 ## Where the owner sees submitted data
 
-All renter and maintainer forms are stored on this app (local `data/db.json` plus uploaded IDs).
+On this Mac only:
 
-1. Scroll to the tiny **admin** link in the site footer
-2. Sign in at `/admin/login` with the owner email and password
-3. Open **Renter applications** or **Home maintainers** to read every field, ID photo, tour date, trade category, and payout account
+1. Run `npm run dev`
+2. Open the tiny **admin** link in the footer (local site only)
+3. Sign in at `/admin/login`
+4. Open **Renter applications** or **Home maintainers**
 
 ## Public site
 

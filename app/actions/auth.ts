@@ -2,8 +2,10 @@
 
 import { redirect } from "next/navigation";
 import { adminCredentials, clearAdminCookie, setAdminCookie } from "@/lib/auth";
+import { adminRunsHere } from "@/lib/host";
 
 export async function loginAction(formData: FormData) {
+  if (!adminRunsHere()) redirect("/admin/login");
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
   const creds = adminCredentials();
