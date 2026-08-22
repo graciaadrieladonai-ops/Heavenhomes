@@ -18,7 +18,9 @@ export function UnlockViewForm({ propertyId }: { propertyId: string }) {
           await unlockViewWithEmailAction(formData);
         } catch (err) {
           if (isNextRedirect(err)) throw err;
-          setError(err instanceof Error ? err.message : "Could not unlock viewing.");
+          const message = err instanceof Error ? err.message : "Could not unlock viewing.";
+          if (/Minified React error #441/.test(message)) throw err;
+          setError(message);
           setPending(false);
         }
       }}

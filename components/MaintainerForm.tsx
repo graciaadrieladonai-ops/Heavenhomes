@@ -37,7 +37,9 @@ export function MaintainerForm() {
           await submitMaintainerAction(formData);
         } catch (err) {
           if (isNextRedirect(err)) throw err;
-          setError(err instanceof Error ? err.message : "Could not submit application.");
+          const message = err instanceof Error ? err.message : "Could not submit application.";
+          if (/Minified React error #441/.test(message)) throw err;
+          setError(message);
           setPending(false);
         }
       }}

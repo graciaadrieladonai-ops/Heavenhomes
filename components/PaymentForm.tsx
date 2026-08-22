@@ -38,7 +38,9 @@ export function PaymentForm({
           await submitPaymentProofAction(formData);
         } catch (err) {
           if (isNextRedirect(err)) throw err;
-          setError(err instanceof Error ? err.message : "Could not confirm payment.");
+          const message = err instanceof Error ? err.message : "Could not confirm payment.";
+          if (/Minified React error #441/.test(message)) throw err;
+          setError(message);
           setPending(false);
         }
       }}

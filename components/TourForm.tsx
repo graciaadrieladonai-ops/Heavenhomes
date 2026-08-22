@@ -42,7 +42,9 @@ export function TourForm({ applicationId }: { applicationId: string }) {
           await scheduleTourAction(formData);
         } catch (err) {
           if (isNextRedirect(err)) throw err;
-          setError(err instanceof Error ? err.message : "Could not save tour.");
+          const message = err instanceof Error ? err.message : "Could not save tour.";
+          if (/Minified React error #441/.test(message)) throw err;
+          setError(message);
           setPending(false);
         }
       }}

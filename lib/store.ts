@@ -298,9 +298,12 @@ async function readDb(): Promise<Database> {
 }
 
 async function writeDb(db: Database) {
-  await writeSharedDb(db);
+  const wroteShared = await writeSharedDb(db);
   if (ON_VERCEL) {
     memoryDb = db;
+    if (hasSharedDatabase() && !wroteShared) {
+      throw new Error("Could not save. Please try applying again.");
+    }
     return;
   }
   try {

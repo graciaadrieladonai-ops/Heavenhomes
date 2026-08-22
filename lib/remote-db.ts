@@ -1,20 +1,32 @@
-import { neon } from "@neondatabase/serverless";
+import "server-only";
 import type { Database } from "./types";
 
 export function hasSharedDatabase() {
   return Boolean(process.env.DATABASE_URL?.trim());
 }
 
-let tableReady = false;
+type Sql = {
+  (strings: TemplateStringsArray, ...values: unknown[]): Promise<unknown>;
+};
 
-function client() {
-  const url = process.env.DATABASE_URL?.trim();
-  if (!url) return null;
-  return neon(url);
+let tableReady = false;
+let sqlClient: Sql | null | undefined;
+
+async function client(): Promise<Sql | null> {
+  if (!hasSharedDatabase()) return null;
+  if (sqlClient !== undefined) return sqlClient;
+  try {
+    const { neon } = await import("@neondatabase/serverless");
+    sqlClient = neon(process.env.DATABASE_URL!.trim()) as unknown as Sql;
+    return sqlClient;
+  } catch {
+    sqlClient = null;
+    return null;
+  }
 }
 
 async function ready() {
-  const sql = client();
+  const sql = await client();
   if (!sql) return null;
   if (!tableReady) {
     await sql`CREATE TABLE IF NOT EXISTS haven_state (
@@ -58,6 +70,7 @@ export async function writeSharedDb(db: Database): Promise<boolean> {
     return true;
   } catch {
     tableReady = false;
+    sqlClient = undefined;
     return false;
   }
 }

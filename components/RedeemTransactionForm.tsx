@@ -18,7 +18,9 @@ export function RedeemTransactionForm({ applicationId }: { applicationId: string
           await redeemTransactionIdAction(formData);
         } catch (err) {
           if (isNextRedirect(err)) throw err;
-          setError(err instanceof Error ? err.message : "That ID was not accepted.");
+          const message = err instanceof Error ? err.message : "That ID was not accepted.";
+          if (/Minified React error #441/.test(message)) throw err;
+          setError(message);
           setPending(false);
         }
       }}
