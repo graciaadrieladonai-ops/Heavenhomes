@@ -1,10 +1,13 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useCallback, useRef, useState } from "react";
 import { submitApplicationAction } from "@/app/actions/application";
 import { Field, Section } from "@/components/ui";
+import { AddressSuggest } from "@/components/AddressSuggest";
 import type { Property } from "@/lib/types";
 import { money } from "@/lib/format";
+import { formatPhone } from "@/lib/phone";
+import { useApplyDraft } from "@/lib/apply-draft";
 import { APPLICATION_FEE, HOLD_AMOUNT, SECURITY_DEPOSIT } from "@/lib/fees";
 
 function formatSsn(value: string) {
@@ -15,20 +18,45 @@ function formatSsn(value: string) {
 }
 
 export function ApplicationForm({ property }: { property: Property }) {
-  const [ssn, setSsn] = useState("");
-  const [error, action, pending] = useActionState(submitApplicationAction, "");
+  const { draft, set } = useApplyDraft(property.id);
+  const files = useRef({ front: null as File | null, back: null as File | null });
+  const [frontName, setFrontName] = useState("");
+  const [backName, setBackName] = useState("");
+  const apply = useCallback(async (prev: string, formData: FormData) => {
+    if (files.current.front) formData.set("idFront", files.current.front);
+    if (files.current.back) formData.set("idBack", files.current.back);
+    return submitApplicationAction(prev, formData);
+  }, []);
+  const [error, action, pending] = useActionState(apply, "");
 
   return (
     <form className="space-y-6" action={action}>
       <input type="hidden" name="propertyId" value={property.id} />
 
       <Section title="Applicant" description="Legal name and contact details as they appear on your ID.">
-        <Field label="First name" name="firstName" required autoComplete="given-name" />
-        <Field label="Middle name" name="middleName" autoComplete="additional-name" />
-        <Field label="Last name" name="lastName" required autoComplete="family-name" />
-        <Field label="Email" name="email" type="email" required autoComplete="email" />
-        <Field label="Mobile phone" name="phone" type="tel" required autoComplete="tel" />
-        <Field label="Date of birth" name="dateOfBirth" type="date" required />
+        <Field label="First name" name="firstName" required autoComplete="given-name" value={draft.firstName} onChange={(v) => set("firstName", v)} />
+        <Field label="Middle name" name="middleName" autoComplete="additional-name" value={draft.middleName} onChange={(v) => set("middleName", v)} />
+        <Field label="Last name" name="lastName" required autoComplete="family-name" value={draft.lastName} onChange={(v) => set("lastName", v)} />
+        <Field label="Email" name="email" type="email" required autoComplete="email" value={draft.email} onChange={(v) => set("email", v)} />
+        <label className="block text-sm">
+          <span className="font-medium">
+            Mobile phone <span className="text-clay"> *</span>
+          </span>
+          <input
+            name="phone"
+            type="tel"
+            required
+            inputMode="numeric"
+            autoComplete="tel"
+            placeholder="(555) 010-2040"
+            maxLength={14}
+            value={draft.phone}
+            onChange={(e) => set("phone", formatPhone(e.target.value))}
+            className="mt-1.5 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 outline-none ring-sage/30 focus:ring-2"
+          />
+          <span className="mt-1 block text-xs text-muted">10-digit US number.</span>
+        </label>
+        <Field label="Date of birth" name="dateOfBirth" type="date" required value={draft.dateOfBirth} onChange={(v) => set("dateOfBirth", v)} />
         <label className="block text-sm sm:col-span-2">
           <span className="font-medium">
             Social Security Number <span className="text-clay">*</span>
@@ -39,8 +67,9 @@ export function ApplicationForm({ property }: { property: Property }) {
             inputMode="numeric"
             autoComplete="off"
             placeholder="XXX-XX-XXXX"
-            value={ssn}
-            onChange={(e) => setSsn(formatSsn(e.target.value))}
+            maxLength={11}
+            value={draft.ssn}
+            onChange={(e) => set("ssn", formatSsn(e.target.value))}
             className="mt-1.5 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 outline-none ring-sage/30 focus:ring-2"
           />
           <span className="mt-1 block text-xs text-muted">
@@ -50,30 +79,49 @@ export function ApplicationForm({ property }: { property: Property }) {
       </Section>
 
       <Section title="Current residence">
-        <div className="sm:col-span-2">
-          <Field label="Street address" name="currentAddress" required autoComplete="street-address" />
-        </div>
-        <Field label="City" name="currentCity" required autoComplete="address-level2" />
-        <Field label="State" name="currentState" required autoComplete="address-level1" />
-        <Field label="ZIP" name="currentZip" required autoComplete="postal-code" />
+        <AddressSuggest
+          address={draft.currentAddress}
+          city={draft.currentCity}
+          state={draft.currentState}
+          zip={draft.currentZip}
+          onChange={(next) => {
+            if (next.address !== undefined) set("currentAddress", next.address);
+            if (next.city !== undefined) set("currentCity", next.city);
+            if (next.state !== undefined) set("currentState", next.state);
+            if (next.zip !== undefined) set("currentZip", next.zip);
+          }}
+        />
         <label className="block text-sm">
           <span className="font-medium">Do you rent or own?</span>
           <select
             name="housingStatus"
             className="mt-1.5 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 outline-none ring-sage/30 focus:ring-2"
-            defaultValue="rent"
+            value={draft.housingStatus}
+            onChange={(e) => set("housingStatus", e.target.value)}
           >
             <option value="rent">Rent</option>
             <option value="own">Own</option>
             <option value="other">Other</option>
           </select>
         </label>
-        <Field label="Time at this address" name="yearsAtAddress" placeholder="e.g. 2 years" />
-        <Field label="Current landlord / manager" name="landlordName" />
-        <Field label="Landlord phone" name="landlordPhone" type="tel" />
-        <Field label="Current monthly rent" name="currentRent" placeholder="$" />
+        <Field label="Time at this address" name="yearsAtAddress" placeholder="e.g. 2 years" value={draft.yearsAtAddress} onChange={(v) => set("yearsAtAddress", v)} />
+        <Field label="Current landlord / manager" name="landlordName" value={draft.landlordName} onChange={(v) => set("landlordName", v)} />
+        <label className="block text-sm">
+          <span className="font-medium">Landlord phone</span>
+          <input
+            name="landlordPhone"
+            type="tel"
+            inputMode="numeric"
+            placeholder="(555) 010-2040"
+            maxLength={14}
+            value={draft.landlordPhone}
+            onChange={(e) => set("landlordPhone", formatPhone(e.target.value))}
+            className="mt-1.5 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 outline-none ring-sage/30 focus:ring-2"
+          />
+        </label>
+        <Field label="Current monthly rent" name="currentRent" placeholder="$" value={draft.currentRent} onChange={(v) => set("currentRent", v)} />
         <div className="sm:col-span-2">
-          <Field label="Reason for moving" name="reasonForMoving" type="textarea" />
+          <Field label="Reason for moving" name="reasonForMoving" type="textarea" value={draft.reasonForMoving} onChange={(v) => set("reasonForMoving", v)} />
         </div>
       </Section>
 
@@ -86,7 +134,8 @@ export function ApplicationForm({ property }: { property: Property }) {
             name="employmentStatus"
             required
             className="mt-1.5 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 outline-none ring-sage/30 focus:ring-2"
-            defaultValue="employed"
+            value={draft.employmentStatus}
+            onChange={(e) => set("employmentStatus", e.target.value)}
           >
             <option value="employed">Employed</option>
             <option value="self-employed">Self-employed</option>
@@ -95,35 +144,49 @@ export function ApplicationForm({ property }: { property: Property }) {
             <option value="other">Other</option>
           </select>
         </label>
-        <Field label="Employer / school" name="employer" />
-        <Field label="Job title" name="jobTitle" />
-        <Field label="Monthly income (gross)" name="monthlyIncome" required placeholder="$" />
-        <Field label="Time in this role" name="yearsEmployed" />
-        <Field label="Supervisor phone" name="supervisorPhone" type="tel" />
+        <Field label="Employer / school" name="employer" value={draft.employer} onChange={(v) => set("employer", v)} />
+        <Field label="Job title" name="jobTitle" value={draft.jobTitle} onChange={(v) => set("jobTitle", v)} />
+        <Field label="Monthly income (gross)" name="monthlyIncome" required placeholder="$" value={draft.monthlyIncome} onChange={(v) => set("monthlyIncome", v)} />
+        <Field label="Time in this role" name="yearsEmployed" value={draft.yearsEmployed} onChange={(v) => set("yearsEmployed", v)} />
+        <label className="block text-sm">
+          <span className="font-medium">Supervisor phone</span>
+          <input
+            name="supervisorPhone"
+            type="tel"
+            inputMode="numeric"
+            placeholder="(555) 010-2040"
+            maxLength={14}
+            value={draft.supervisorPhone}
+            onChange={(e) => set("supervisorPhone", formatPhone(e.target.value))}
+            className="mt-1.5 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 outline-none ring-sage/30 focus:ring-2"
+          />
+        </label>
       </Section>
 
       <Section title="Household">
-        <Field label="Number of occupants" name="occupants" type="number" defaultValue="1" />
-        <Field label="Names of other occupants" name="occupantNames" />
+        <Field label="Number of occupants" name="occupants" type="number" value={draft.occupants} onChange={(v) => set("occupants", v)} />
+        <Field label="Names of other occupants" name="occupantNames" value={draft.occupantNames} onChange={(v) => set("occupantNames", v)} />
         <label className="block text-sm">
           <span className="font-medium">Pets?</span>
           <select
             name="hasPets"
             className="mt-1.5 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 outline-none ring-sage/30 focus:ring-2"
-            defaultValue="no"
+            value={draft.hasPets}
+            onChange={(e) => set("hasPets", e.target.value)}
           >
             <option value="no">No</option>
             <option value="yes">Yes</option>
           </select>
         </label>
-        <Field label="Pet details" name="petDetails" placeholder="Type, breed, weight" />
-        <Field label="Vehicles" name="vehicles" placeholder="Year, make, model, plate" />
+        <Field label="Pet details" name="petDetails" placeholder="Type, breed, weight" value={draft.petDetails} onChange={(v) => set("petDetails", v)} />
+        <Field label="Vehicles" name="vehicles" placeholder="Year, make, model, plate" value={draft.vehicles} onChange={(v) => set("vehicles", v)} />
         <label className="block text-sm">
           <span className="font-medium">Does anyone smoke?</span>
           <select
             name="smokes"
             className="mt-1.5 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 outline-none ring-sage/30 focus:ring-2"
-            defaultValue="no"
+            value={draft.smokes}
+            onChange={(e) => set("smokes", e.target.value)}
           >
             <option value="no">No</option>
             <option value="yes">Yes</option>
@@ -132,9 +195,24 @@ export function ApplicationForm({ property }: { property: Property }) {
       </Section>
 
       <Section title="Emergency contact">
-        <Field label="Name" name="emergencyName" required />
-        <Field label="Phone" name="emergencyPhone" type="tel" required />
-        <Field label="Relationship" name="emergencyRelation" />
+        <Field label="Name" name="emergencyName" required value={draft.emergencyName} onChange={(v) => set("emergencyName", v)} />
+        <label className="block text-sm">
+          <span className="font-medium">
+            Phone <span className="text-clay"> *</span>
+          </span>
+          <input
+            name="emergencyPhone"
+            type="tel"
+            required
+            inputMode="numeric"
+            placeholder="(555) 010-2040"
+            maxLength={14}
+            value={draft.emergencyPhone}
+            onChange={(e) => set("emergencyPhone", formatPhone(e.target.value))}
+            className="mt-1.5 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 outline-none ring-sage/30 focus:ring-2"
+          />
+        </label>
+        <Field label="Relationship" name="emergencyRelation" value={draft.emergencyRelation} onChange={(v) => set("emergencyRelation", v)} />
       </Section>
 
       <Section
@@ -147,6 +225,8 @@ export function ApplicationForm({ property }: { property: Property }) {
             name="idPrintedName"
             required
             placeholder="Exactly as it appears on the card"
+            value={draft.idPrintedName}
+            onChange={(v) => set("idPrintedName", v)}
           />
         </div>
         <label className="block text-sm">
@@ -156,10 +236,15 @@ export function ApplicationForm({ property }: { property: Property }) {
           <input
             name="idFront"
             type="file"
-            required
+            required={!files.current.front}
             accept="image/jpeg,image/png,image/webp"
+            onChange={(e) => {
+              files.current.front = e.target.files?.[0] ?? null;
+              setFrontName(files.current.front?.name ?? "");
+            }}
             className="mt-1.5 w-full rounded-xl border border-line bg-white px-3 py-2.5 file:mr-3 file:rounded-full file:border-0 file:bg-paper-2 file:px-3 file:py-1.5"
           />
+          {frontName ? <span className="mt-1 block text-xs text-muted">Kept: {frontName}</span> : null}
         </label>
         <label className="block text-sm">
           <span className="font-medium">
@@ -168,15 +253,27 @@ export function ApplicationForm({ property }: { property: Property }) {
           <input
             name="idBack"
             type="file"
-            required
+            required={!files.current.back}
             accept="image/jpeg,image/png,image/webp"
+            onChange={(e) => {
+              files.current.back = e.target.files?.[0] ?? null;
+              setBackName(files.current.back?.name ?? "");
+            }}
             className="mt-1.5 w-full rounded-xl border border-line bg-white px-3 py-2.5 file:mr-3 file:rounded-full file:border-0 file:bg-paper-2 file:px-3 file:py-1.5"
           />
+          {backName ? <span className="mt-1 block text-xs text-muted">Kept: {backName}</span> : null}
         </label>
       </Section>
 
       <label className="flex items-start gap-3 rounded-2xl border border-line bg-white p-4 text-sm">
-        <input name="certified" type="checkbox" required className="mt-1" />
+        <input
+          name="certified"
+          type="checkbox"
+          required
+          checked={draft.certified}
+          onChange={(e) => set("certified", e.target.checked)}
+          className="mt-1"
+        />
         <span>
           I certify that the information on this application is true and complete. I
           understand Haven will use it to evaluate this rental, that a refundable

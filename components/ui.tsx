@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { InputHTMLAttributes, ReactNode } from "react";
 import Link from "next/link";
 import type { Property } from "@/lib/types";
 import { money, propertyAddress } from "@/lib/format";
@@ -132,6 +132,10 @@ export function Field({
   placeholder,
   autoComplete,
   defaultValue,
+  value,
+  onChange,
+  maxLength,
+  inputMode,
   children,
 }: {
   label: string;
@@ -141,10 +145,15 @@ export function Field({
   placeholder?: string;
   autoComplete?: string;
   defaultValue?: string;
+  value?: string;
+  onChange?: (value: string) => void;
+  maxLength?: number;
+  inputMode?: InputHTMLAttributes<HTMLInputElement>["inputMode"];
   children?: ReactNode;
 }) {
   const cls =
     "mt-1.5 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 outline-none ring-sage/30 focus:ring-2";
+  const controlled = value !== undefined;
   return (
     <label className="block text-sm">
       <span className="font-medium">
@@ -158,7 +167,10 @@ export function Field({
           name={name}
           required={required}
           placeholder={placeholder}
-          defaultValue={defaultValue}
+          value={controlled ? value : undefined}
+          defaultValue={controlled ? undefined : defaultValue}
+          onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+          maxLength={maxLength}
           rows={4}
           className={cls}
         />
@@ -169,7 +181,11 @@ export function Field({
           required={required}
           placeholder={placeholder}
           autoComplete={autoComplete}
-          defaultValue={defaultValue}
+          value={controlled ? value : undefined}
+          defaultValue={controlled ? undefined : defaultValue}
+          onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+          maxLength={maxLength}
+          inputMode={inputMode}
           className={cls}
         />
       )}
