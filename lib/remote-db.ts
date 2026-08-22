@@ -1,4 +1,3 @@
-import "server-only";
 import type { Database } from "./types";
 
 export function hasSharedDatabase() {
@@ -104,15 +103,17 @@ export async function writeSharedDb(db: Database): Promise<boolean> {
   if (!hasSharedDatabase()) return false;
   try {
     if (await insertState(db)) return true;
-  } catch {
+  } catch (error) {
     tableReady = false;
     sqlClient = undefined;
+    console.error("haven shared db write failed", error);
   }
   try {
     return await insertState(slimForWrite(db));
-  } catch {
+  } catch (error) {
     tableReady = false;
     sqlClient = undefined;
+    console.error("haven shared db slim write failed", error);
     return false;
   }
 }

@@ -4,15 +4,11 @@ export function isNextRedirect(error: unknown) {
     "digest" in error && typeof (error as { digest: unknown }).digest === "string"
       ? String((error as { digest: string }).digest)
       : "";
-  if (
-    digest.startsWith("NEXT_REDIRECT") ||
-    digest.startsWith("NEXT_NOT_FOUND") ||
-    digest.startsWith("NEXT_HTTP_ERROR_FALLBACK")
-  ) {
+  if (digest.startsWith("NEXT_REDIRECT") || digest.startsWith("NEXT_NOT_FOUND")) {
     return true;
   }
   const message = error instanceof Error ? error.message : "";
-  return message.includes("NEXT_REDIRECT") || /Minified React error #441/.test(message);
+  return message.includes("NEXT_REDIRECT");
 }
 
 export function rethrowNavigation(error: unknown): void {

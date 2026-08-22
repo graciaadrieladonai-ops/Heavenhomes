@@ -46,59 +46,60 @@ function required(formData: FormData, keys: string[]) {
   }
 }
 
-export async function submitApplicationAction(formData: FormData) {
-  const propertyId = str(formData, "propertyId");
-  const property = await getProperty(propertyId);
-  if (!property || !property.published) {
-    throw new Error("Property not found");
-  }
+async function saveRenterApplication(formData: FormData): Promise<{ error: string } | { id: string; propertyId: string }> {
+  try {
+    const propertyId = str(formData, "propertyId");
+    const property = await getProperty(propertyId);
+    if (!property || !property.published) {
+      return { error: "That home is not available." };
+    }
 
-  required(formData, [
-    "firstName",
-    "lastName",
-    "email",
-    "phone",
-    "dateOfBirth",
-    "ssn",
-    "currentAddress",
-    "currentCity",
-    "currentState",
-    "currentZip",
-    "employmentStatus",
-    "monthlyIncome",
-    "emergencyName",
-    "emergencyPhone",
-  ]);
+    required(formData, [
+      "firstName",
+      "lastName",
+      "email",
+      "phone",
+      "dateOfBirth",
+      "ssn",
+      "currentAddress",
+      "currentCity",
+      "currentState",
+      "currentZip",
+      "employmentStatus",
+      "monthlyIncome",
+      "emergencyName",
+      "emergencyPhone",
+    ]);
 
-  if (str(formData, "certified") !== "on") {
-    throw new Error("You must certify the application.");
-  }
+    if (str(formData, "certified") !== "on") {
+      return { error: "You must certify the application." };
+    }
 
-  const ssnError = validateSsn(str(formData, "ssn"));
-  if (ssnError) throw new Error(ssnError);
+    const ssnError = validateSsn(str(formData, "ssn"));
+    if (ssnError) return { error: ssnError };
 
-  const idFront = formData.get("idFront");
-  const idBack = formData.get("idBack");
-  if (!(idFront instanceof File) || idFront.size === 0) {
-    throw new Error("Front of ID is required");
-  }
-  if (!(idBack instanceof File) || idBack.size === 0) {
-    throw new Error("Back of ID is required");
-  }
+    const idFront = formData.get("idFront");
+    const idBack = formData.get("idBack");
+    if (!(idFront instanceof File) || idFront.size === 0) {
+      return { error: "Front of ID is required" };
+    }
+    if (!(idBack instanceof File) || idBack.size === 0) {
+      return { error: "Back of ID is required" };
+    }
 
-  const printedName = str(formData, "idPrintedName");
-  const firstName = str(formData, "firstName");
-  const lastName = str(formData, "lastName");
-  const frontError = await validateIdPhoto(idFront, "front", printedName, firstName, lastName);
-  if (frontError) throw new Error(frontError);
-  const backError = await validateIdPhoto(idBack, "back", printedName, firstName, lastName);
-  if (backError) throw new Error(backError);
+    const printedName = str(formData, "idPrintedName");
+    const firstName = str(formData, "firstName");
+    const lastName = str(formData, "lastName");
+    const frontError = await validateIdPhoto(idFront, "front", printedName, firstName, lastName);
+    if (frontError) return { error: frontError };
+    const backError = await validateIdPhoto(idBack, "back", printedName, firstName, lastName);
+    if (backError) return { error: backError };
 
-  const id = newId("app");
-  const idFrontPath = await saveUpload(idFront, "ids", `${id}_front`);
-  const idBackPath = await saveUpload(idBack, "ids", `${id}_back`);
+    const id = newId("app");
+    const idFrontPath = await saveUpload(idFront, "ids", `${id}_front`);
+    const idBackPath = await saveUpload(idBack, "ids", `${id}_back`);
 
-  const application: Application = {
+    const application: Application = {
     id,
     propertyId,
     status: "applied",
@@ -150,15 +151,29 @@ export async function submitApplicationAction(formData: FormData) {
     tourCode: "",
     paidHold: false,
     amountPaid: 0,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
 
-  await saveApplication(application);
-  await rememberRenterApplication(propertyId, application.id);
-  revalidatePath("/");
-  revalidatePath("/admin");
-  redirect(`/tour/${application.id}`);
+    await saveApplication(application);
+    await rememberRenterApplication(propertyId, application.id);
+    revalidatePath("/");
+    revalidatePath("/admin");
+    return { id: application.id, propertyId };
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("Missing ")) {
+      return { error: error.message };
+    }
+    const message = error instanceof Error ? error.message : "Could not submit application.";
+    if (message.includes("NEXT_REDIRECT")) throw error;
+    return { error: message };
+  }
+}
+
+export async function submitApplicationAction(_prev: string, formData: FormData) {
+  const saved = await saveRenterApplication(formData);
+  if ("error" in saved) return saved.error;
+  redirect(`/tour/${saved.id}`);
 }
 
 export async function scheduleTourAction(formData: FormData) {

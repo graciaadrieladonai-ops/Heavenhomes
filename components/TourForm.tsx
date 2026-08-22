@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useFormStatus } from "react-dom";
 import { scheduleTourAction } from "@/app/actions/application";
-import { isNextRedirect } from "@/lib/errors";
 
 function slotsForDate(iso: string) {
   if (!iso) return [];
@@ -20,6 +20,19 @@ function labelTime(t: string) {
   return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 }
 
+function ContinueButton({ disabled }: { disabled: boolean }) {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending || disabled}
+      className="inline-flex h-12 w-full items-center justify-center rounded-full bg-sage text-sm font-medium text-white hover:bg-sage-2 disabled:opacity-60"
+    >
+      {pending ? "Saving…" : "Continue to payment"}
+    </button>
+  );
+}
+
 export function TourForm({ applicationId }: { applicationId: string }) {
   const min = useMemo(() => {
     const d = new Date();
@@ -28,27 +41,10 @@ export function TourForm({ applicationId }: { applicationId: string }) {
   }, []);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState("");
   const slots = slotsForDate(date);
 
   return (
-    <form
-      className="space-y-6"
-      action={async (formData) => {
-        setError("");
-        setPending(true);
-        try {
-          await scheduleTourAction(formData);
-        } catch (err) {
-          if (isNextRedirect(err)) throw err;
-          const message = err instanceof Error ? err.message : "Could not save tour.";
-          if (/Minified React error #441/.test(message)) throw err;
-          setError(message);
-          setPending(false);
-        }
-      }}
-    >
+    <form className="space-y-6" action={scheduleTourAction}>
       <input type="hidden" name="applicationId" value={applicationId} />
       <input type="hidden" name="tourTime" value={time} />
 
@@ -102,19 +98,7 @@ export function TourForm({ applicationId }: { applicationId: string }) {
         />
       </label>
 
-      {error ? (
-        <p className="rounded-xl border border-clay/30 bg-[#f8ece6] px-4 py-3 text-sm text-clay">
-          {error}
-        </p>
-      ) : null}
-
-      <button
-        type="submit"
-        disabled={pending || !date || !time}
-        className="inline-flex h-12 w-full items-center justify-center rounded-full bg-sage text-sm font-medium text-white hover:bg-sage-2 disabled:opacity-60"
-      >
-        {pending ? "Saving…" : "Continue to payment"}
-      </button>
+      <ContinueButton disabled={!date || !time} />
     </form>
   );
 }

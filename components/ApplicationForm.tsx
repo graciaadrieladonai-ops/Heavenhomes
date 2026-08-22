@@ -5,9 +5,7 @@ import { submitApplicationAction } from "@/app/actions/application";
 import { Field, Section } from "@/components/ui";
 import type { Property } from "@/lib/types";
 import { money } from "@/lib/format";
-import { isNextRedirect } from "@/lib/errors";
 import { APPLICATION_FEE, HOLD_AMOUNT, SECURITY_DEPOSIT } from "@/lib/fees";
-import { validateSsn } from "@/lib/validate-ssn";
 
 function formatSsn(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 9);
@@ -16,23 +14,9 @@ function formatSsn(value: string) {
   return digits;
 }
 
-async function applyAction(_prev: string, formData: FormData) {
-  const ssnError = validateSsn(String(formData.get("ssn") || ""));
-  if (ssnError) return ssnError;
-  try {
-    await submitApplicationAction(formData);
-  } catch (err) {
-    if (isNextRedirect(err)) throw err;
-    const message = err instanceof Error ? err.message : "Could not submit application.";
-    if (/Minified React error #441/.test(message)) throw err;
-    return message;
-  }
-  return "";
-}
-
 export function ApplicationForm({ property }: { property: Property }) {
   const [ssn, setSsn] = useState("");
-  const [error, action, pending] = useActionState(applyAction, "");
+  const [error, action, pending] = useActionState(submitApplicationAction, "");
 
   return (
     <form className="space-y-6" action={action}>
