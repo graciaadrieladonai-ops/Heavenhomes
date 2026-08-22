@@ -43,14 +43,13 @@ function decode(token: string | undefined): RenterSession | null {
 }
 
 export async function getRenterSession(): Promise<RenterSession> {
-  const jar = await cookies();
-  return (
-    decode(jar.get(COOKIE)?.value) ?? {
-      propertyIds: [],
-      applicationIds: [],
-      exp: 0,
-    }
-  );
+  const empty: RenterSession = { propertyIds: [], applicationIds: [], exp: 0 };
+  try {
+    const jar = await cookies();
+    return decode(jar.get(COOKIE)?.value) ?? empty;
+  } catch {
+    return empty;
+  }
 }
 
 export async function rememberRenterApplication(propertyId: string, applicationId: string) {

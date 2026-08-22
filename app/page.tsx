@@ -5,6 +5,7 @@ import { filterProperties, listPublishedProperties } from "@/lib/store";
 import { getRenterSession } from "@/lib/renter";
 import { maintainerHasApplied } from "@/lib/maintainer";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage({
@@ -13,11 +14,24 @@ export default async function HomePage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q = "" } = await searchParams;
-  const [all, renter, maintainerApplied] = await Promise.all([
-    listPublishedProperties(),
-    getRenterSession(),
-    maintainerHasApplied(),
-  ]);
+  let all: Awaited<ReturnType<typeof listPublishedProperties>> = [];
+  let renter = { propertyIds: [] as string[], applicationIds: [] as string[], exp: 0 };
+  let maintainerApplied = false;
+  try {
+    all = await listPublishedProperties();
+  } catch {
+    all = [];
+  }
+  try {
+    renter = await getRenterSession();
+  } catch {
+    /* viewing lock stays off */
+  }
+  try {
+    maintainerApplied = await maintainerHasApplied();
+  } catch {
+    maintainerApplied = false;
+  }
   const properties = filterProperties(all, q);
 
   return (

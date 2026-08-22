@@ -43,14 +43,13 @@ function decode(token: string | undefined): MaintainerSession | null {
 }
 
 export async function getMaintainerSession(): Promise<MaintainerSession> {
-  const jar = await cookies();
-  return (
-    decode(jar.get(COOKIE)?.value) ?? {
-      applied: false,
-      maintainerIds: [],
-      exp: 0,
-    }
-  );
+  const empty: MaintainerSession = { applied: false, maintainerIds: [], exp: 0 };
+  try {
+    const jar = await cookies();
+    return decode(jar.get(COOKIE)?.value) ?? empty;
+  } catch {
+    return empty;
+  }
 }
 
 export async function rememberMaintainer(maintainerId: string) {

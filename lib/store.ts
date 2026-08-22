@@ -249,6 +249,17 @@ function fallbackDb() {
 }
 
 async function ensureDb() {
+  if (ON_VERCEL) {
+    fallbackDb();
+    try {
+      await fs.mkdir(path.join(UPLOAD_DIR, "ids"), { recursive: true });
+      await fs.mkdir(path.join(UPLOAD_DIR, "properties"), { recursive: true });
+      await fs.mkdir(path.join(UPLOAD_DIR, "proofs"), { recursive: true });
+    } catch {
+      // Listings still work if uploads cannot be written.
+    }
+    return;
+  }
   if (useMemory) return;
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
