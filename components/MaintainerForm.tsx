@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { submitMaintainerAction } from "@/app/actions/maintainer";
 import { Field, Section } from "@/components/ui";
+import { PhoneField } from "@/components/PhoneField";
 import { isNextRedirect } from "@/lib/errors";
 import { validateSsn } from "@/lib/validate-ssn";
 import { MAINTAINER_CATEGORIES } from "@/lib/trades";
@@ -52,7 +53,7 @@ export function MaintainerForm() {
         <Field label="Middle name" name="middleName" />
         <Field label="Last name" name="lastName" required autoComplete="family-name" />
         <Field label="Email" name="email" type="email" required autoComplete="email" />
-        <Field label="Mobile phone" name="phone" type="tel" required autoComplete="tel" />
+        <PhoneField label="Mobile phone" name="phone" required />
         <Field label="Date of birth" name="dateOfBirth" type="date" required />
         <label className="block text-sm sm:col-span-2">
           <span className="font-medium">

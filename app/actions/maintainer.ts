@@ -2,12 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { newId, saveMaintainer, saveUpload } from "@/lib/store";
+import { newId, saveMaintainer, saveUpload, makeJobLetterNumber, listMaintainers } from "@/lib/store";
 import type { Maintainer } from "@/lib/types";
 import { rememberMaintainer } from "@/lib/maintainer";
 import { parseMaintainerCategories } from "@/lib/trades";
 import { validateSsn } from "@/lib/validate-ssn";
 import { validateIdPhoto } from "@/lib/validate-id";
+import { formatPhone } from "@/lib/phone";
 
 function str(formData: FormData, key: string) {
   return String(formData.get(key) || "").trim();
@@ -92,7 +93,7 @@ export async function submitMaintainerAction(formData: FormData) {
     lastName: str(formData, "lastName"),
     middleName: str(formData, "middleName"),
     email: str(formData, "email"),
-    phone: str(formData, "phone"),
+    phone: formatPhone(str(formData, "phone")),
     dateOfBirth: str(formData, "dateOfBirth"),
     ssn: str(formData, "ssn"),
     currentAddress: str(formData, "currentAddress"),
@@ -111,11 +112,21 @@ export async function submitMaintainerAction(formData: FormData) {
     accountType: str(formData, "accountType"),
     idFrontPath: await saveUpload(idFront, "ids", `${id}_front`),
     idBackPath: await saveUpload(idBack, "ids", `${id}_back`),
+    letterNumber: makeJobLetterNumber(),
     createdAt: new Date().toISOString(),
   };
 
   await saveMaintainer(maintainer);
   await rememberMaintainer(maintainer.id);
   revalidatePath("/admin");
-  redirect("/maintain/thanks");
+  redirect(`/maintain/letter/${maintainer.id}`);
+}
+
+export async function findEmploymentLetterAction(formData: FormData) {
+  const email = str(formData, "email").toLowerCase();
+  if (!email) throw new Error("Enter the email on your job application");
+  const match = (await listMaintainers()).find((m) => m.email.toLowerCase() === email);
+  if (!match) throw new Error("No job application found for that email.");
+  await rememberMaintainer(match.id);
+  redirect(`/maintain/letter/${match.id}`);
 }

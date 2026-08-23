@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { getPaymentAccounts, savePaymentAccounts } from "@/lib/store";
 import type { PaymentAccounts } from "@/lib/types";
+import { formatPhone } from "@/lib/phone";
 
 function str(formData: FormData, key: string) {
   return String(formData.get(key) || "").trim();
@@ -28,7 +29,7 @@ export async function updatePaymentAccountsAction(formData: FormData) {
     },
     walmart: {
       receiverName: str(formData, "walmart_receiverName"),
-      phone: str(formData, "walmart_phone"),
+      phone: formatPhone(str(formData, "walmart_phone")),
       notes: str(formData, "walmart_notes"),
       updatedAt:
         str(formData, "walmart_receiverName") !== existing.walmart.receiverName ||

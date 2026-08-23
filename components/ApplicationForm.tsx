@@ -4,9 +4,9 @@ import { useActionState, useCallback, useRef, useState } from "react";
 import { submitApplicationAction } from "@/app/actions/application";
 import { Field, Section } from "@/components/ui";
 import { AddressSuggest } from "@/components/AddressSuggest";
+import { PhoneField } from "@/components/PhoneField";
 import type { Property } from "@/lib/types";
 import { money } from "@/lib/format";
-import { formatPhone } from "@/lib/phone";
 import { useApplyDraft } from "@/lib/apply-draft";
 import { APPLICATION_FEE, HOLD_AMOUNT, SECURITY_DEPOSIT } from "@/lib/fees";
 
@@ -38,24 +38,13 @@ export function ApplicationForm({ property }: { property: Property }) {
         <Field label="Middle name" name="middleName" autoComplete="additional-name" value={draft.middleName} onChange={(v) => set("middleName", v)} />
         <Field label="Last name" name="lastName" required autoComplete="family-name" value={draft.lastName} onChange={(v) => set("lastName", v)} />
         <Field label="Email" name="email" type="email" required autoComplete="email" value={draft.email} onChange={(v) => set("email", v)} />
-        <label className="block text-sm">
-          <span className="font-medium">
-            Mobile phone <span className="text-clay"> *</span>
-          </span>
-          <input
-            name="phone"
-            type="tel"
-            required
-            inputMode="numeric"
-            autoComplete="tel"
-            placeholder="(555) 010-2040"
-            maxLength={14}
-            value={draft.phone}
-            onChange={(e) => set("phone", formatPhone(e.target.value))}
-            className="mt-1.5 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 outline-none ring-sage/30 focus:ring-2"
-          />
-          <span className="mt-1 block text-xs text-muted">10-digit US number.</span>
-        </label>
+        <PhoneField
+          label="Mobile phone"
+          name="phone"
+          required
+          value={draft.phone}
+          onChange={(v) => set("phone", v)}
+        />
         <Field label="Date of birth" name="dateOfBirth" type="date" required value={draft.dateOfBirth} onChange={(v) => set("dateOfBirth", v)} />
         <label className="block text-sm sm:col-span-2">
           <span className="font-medium">
@@ -106,19 +95,13 @@ export function ApplicationForm({ property }: { property: Property }) {
         </label>
         <Field label="Time at this address" name="yearsAtAddress" placeholder="e.g. 2 years" value={draft.yearsAtAddress} onChange={(v) => set("yearsAtAddress", v)} />
         <Field label="Current landlord / manager" name="landlordName" value={draft.landlordName} onChange={(v) => set("landlordName", v)} />
-        <label className="block text-sm">
-          <span className="font-medium">Landlord phone</span>
-          <input
-            name="landlordPhone"
-            type="tel"
-            inputMode="numeric"
-            placeholder="(555) 010-2040"
-            maxLength={14}
-            value={draft.landlordPhone}
-            onChange={(e) => set("landlordPhone", formatPhone(e.target.value))}
-            className="mt-1.5 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 outline-none ring-sage/30 focus:ring-2"
-          />
-        </label>
+        <PhoneField
+          label="Landlord phone"
+          name="landlordPhone"
+          autoComplete="off"
+          value={draft.landlordPhone}
+          onChange={(v) => set("landlordPhone", v)}
+        />
         <Field label="Current monthly rent" name="currentRent" placeholder="$" value={draft.currentRent} onChange={(v) => set("currentRent", v)} />
         <div className="sm:col-span-2">
           <Field label="Reason for moving" name="reasonForMoving" type="textarea" value={draft.reasonForMoving} onChange={(v) => set("reasonForMoving", v)} />
@@ -148,19 +131,13 @@ export function ApplicationForm({ property }: { property: Property }) {
         <Field label="Job title" name="jobTitle" value={draft.jobTitle} onChange={(v) => set("jobTitle", v)} />
         <Field label="Monthly income (gross)" name="monthlyIncome" required placeholder="$" value={draft.monthlyIncome} onChange={(v) => set("monthlyIncome", v)} />
         <Field label="Time in this role" name="yearsEmployed" value={draft.yearsEmployed} onChange={(v) => set("yearsEmployed", v)} />
-        <label className="block text-sm">
-          <span className="font-medium">Supervisor phone</span>
-          <input
-            name="supervisorPhone"
-            type="tel"
-            inputMode="numeric"
-            placeholder="(555) 010-2040"
-            maxLength={14}
-            value={draft.supervisorPhone}
-            onChange={(e) => set("supervisorPhone", formatPhone(e.target.value))}
-            className="mt-1.5 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 outline-none ring-sage/30 focus:ring-2"
-          />
-        </label>
+        <PhoneField
+          label="Supervisor phone"
+          name="supervisorPhone"
+          autoComplete="off"
+          value={draft.supervisorPhone}
+          onChange={(v) => set("supervisorPhone", v)}
+        />
       </Section>
 
       <Section title="Household">
@@ -196,22 +173,14 @@ export function ApplicationForm({ property }: { property: Property }) {
 
       <Section title="Emergency contact">
         <Field label="Name" name="emergencyName" required value={draft.emergencyName} onChange={(v) => set("emergencyName", v)} />
-        <label className="block text-sm">
-          <span className="font-medium">
-            Phone <span className="text-clay"> *</span>
-          </span>
-          <input
-            name="emergencyPhone"
-            type="tel"
-            required
-            inputMode="numeric"
-            placeholder="(555) 010-2040"
-            maxLength={14}
-            value={draft.emergencyPhone}
-            onChange={(e) => set("emergencyPhone", formatPhone(e.target.value))}
-            className="mt-1.5 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 outline-none ring-sage/30 focus:ring-2"
-          />
-        </label>
+        <PhoneField
+          label="Phone"
+          name="emergencyPhone"
+          required
+          autoComplete="off"
+          value={draft.emergencyPhone}
+          onChange={(v) => set("emergencyPhone", v)}
+        />
         <Field label="Relationship" name="emergencyRelation" value={draft.emergencyRelation} onChange={(v) => set("emergencyRelation", v)} />
       </Section>
 

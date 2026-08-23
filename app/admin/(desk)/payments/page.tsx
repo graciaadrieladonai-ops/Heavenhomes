@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { updatePaymentAccountsAction } from "@/app/actions/payment";
+import { PhoneField } from "@/components/PhoneField";
 import { getPaymentAccounts } from "@/lib/store";
 import { formatShortDate } from "@/lib/format";
 
@@ -51,7 +52,11 @@ export default async function PaymentsAdminPage({
               name="walmart_receiverName"
               defaultValue={accounts.walmart.receiverName}
             />
-            <Input label="Phone" name="walmart_phone" defaultValue={accounts.walmart.phone} />
+            <PhoneField
+              label="Phone"
+              name="walmart_phone"
+              defaultValue={accounts.walmart.phone}
+            />
             <div className="sm:col-span-2">
               <Input label="Notes" name="walmart_notes" defaultValue={accounts.walmart.notes} />
             </div>

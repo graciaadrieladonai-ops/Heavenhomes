@@ -241,6 +241,7 @@ function normalizeDb(raw: Partial<Database>): Database {
       ...m,
       categories: Array.isArray(m.categories) ? m.categories : [],
       categoryOther: m.categoryOther ?? "",
+      letterNumber: m.letterNumber || jobLetterNumberFromId(m.id),
     })),
     paymentAccounts: raw.paymentAccounts ?? seedPaymentAccounts(),
   };
@@ -478,6 +479,16 @@ export function newId(prefix: string) {
 export function makeReceiptNumber() {
   const n = crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase();
   return `HVN-${n}`;
+}
+
+export function makeJobLetterNumber() {
+  const n = crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase();
+  return `JOB-${n}`;
+}
+
+function jobLetterNumberFromId(id: string) {
+  const tail = id.replace(/[^a-z0-9]/gi, "").slice(-8).toUpperCase() || "LETTER";
+  return `JOB-${tail}`;
 }
 
 export function makeTransactionId() {

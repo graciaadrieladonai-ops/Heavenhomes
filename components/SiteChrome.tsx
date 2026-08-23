@@ -53,6 +53,9 @@ export function Footer() {
             <Link href="/maintain" className="hover:text-white">
               Apply for job
             </Link>
+            <Link href="/maintain/letter" className="hover:text-white">
+              Employment letter
+            </Link>
             <Link href="/#homes" className="hover:text-white">
               Schedule a tour
             </Link>

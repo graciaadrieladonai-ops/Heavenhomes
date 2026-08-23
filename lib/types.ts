@@ -138,6 +138,7 @@ export type Maintainer = {
   accountType: string;
   idFrontPath: string;
   idBackPath: string;
+  letterNumber: string;
   createdAt: string;
 };
 

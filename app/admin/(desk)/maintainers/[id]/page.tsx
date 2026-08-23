@@ -43,7 +43,21 @@ export default async function MaintainerDetailPage({
       <h1 className="mt-3 font-serif text-4xl">
         {m.firstName} {m.lastName}
       </h1>
-      <p className="mt-2 text-muted">Maintainer application</p>
+      <p className="mt-2 text-muted">Job application</p>
+      <div className="mt-6 flex flex-wrap gap-3">
+        <Link
+          href={`/maintain/letter/${m.id}`}
+          className="inline-flex h-11 items-center rounded-full bg-sage px-5 text-sm text-white"
+        >
+          Open employment letter
+        </Link>
+        <a
+          href={`/maintain/letter/${m.id}/download`}
+          className="inline-flex h-11 items-center rounded-full border border-line bg-white px-5 text-sm"
+        >
+          Download letter
+        </a>
+      </div>
       <dl className="mt-8 divide-y divide-line rounded-2xl border border-line bg-white">
         {rows.map(([label, value]) => (
           <div key={label} className="grid gap-1 px-5 py-3 sm:grid-cols-[10rem_1fr]">

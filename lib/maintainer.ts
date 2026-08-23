@@ -77,3 +77,8 @@ export async function maintainerHasApplied() {
   const session = await getMaintainerSession();
   return session.applied;
 }
+
+export async function maintainerOwns(maintainerId: string) {
+  const session = await getMaintainerSession();
+  return session.maintainerIds.includes(maintainerId);
+}

@@ -14,7 +14,7 @@ export default function MaintainPage() {
           cleaner, carpenter, and more), the days you can work, the pay you
           want for two visits a week, and your bank details for cheque deposit.
           You must submit this application before you can use Get code and view
-          now.
+          now. After you apply you can download an employment letter.
         </p>
         <div className="mt-8">
           <MaintainerForm />

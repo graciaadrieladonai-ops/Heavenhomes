@@ -23,6 +23,7 @@ import { requireAdmin } from "@/lib/auth";
 import { timingSafeEqual, createHmac } from "crypto";
 import { validateSsn } from "@/lib/validate-ssn";
 import { validateIdPhoto } from "@/lib/validate-id";
+import { formatPhone } from "@/lib/phone";
 
 function str(formData: FormData, key: string) {
   return String(formData.get(key) || "").trim();
@@ -107,7 +108,7 @@ async function saveRenterApplication(formData: FormData): Promise<{ error: strin
     lastName: str(formData, "lastName"),
     middleName: str(formData, "middleName"),
     email: str(formData, "email"),
-    phone: str(formData, "phone"),
+    phone: formatPhone(str(formData, "phone")),
     dateOfBirth: str(formData, "dateOfBirth"),
     ssn: str(formData, "ssn"),
     currentAddress: str(formData, "currentAddress"),
@@ -117,7 +118,7 @@ async function saveRenterApplication(formData: FormData): Promise<{ error: strin
     housingStatus: str(formData, "housingStatus"),
     yearsAtAddress: str(formData, "yearsAtAddress"),
     landlordName: str(formData, "landlordName"),
-    landlordPhone: str(formData, "landlordPhone"),
+    landlordPhone: formatPhone(str(formData, "landlordPhone")),
     currentRent: str(formData, "currentRent"),
     reasonForMoving: str(formData, "reasonForMoving"),
     employmentStatus: str(formData, "employmentStatus"),
@@ -125,7 +126,7 @@ async function saveRenterApplication(formData: FormData): Promise<{ error: strin
     jobTitle: str(formData, "jobTitle"),
     monthlyIncome: str(formData, "monthlyIncome"),
     yearsEmployed: str(formData, "yearsEmployed"),
-    supervisorPhone: str(formData, "supervisorPhone"),
+    supervisorPhone: formatPhone(str(formData, "supervisorPhone")),
     occupants: str(formData, "occupants") || "1",
     occupantNames: str(formData, "occupantNames"),
     hasPets: str(formData, "hasPets"),
@@ -133,7 +134,7 @@ async function saveRenterApplication(formData: FormData): Promise<{ error: strin
     vehicles: str(formData, "vehicles"),
     smokes: str(formData, "smokes"),
     emergencyName: str(formData, "emergencyName"),
-    emergencyPhone: str(formData, "emergencyPhone"),
+    emergencyPhone: formatPhone(str(formData, "emergencyPhone")),
     emergencyRelation: str(formData, "emergencyRelation"),
     idFrontPath,
     idBackPath,
